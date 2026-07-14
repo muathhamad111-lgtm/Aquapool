@@ -1,14 +1,3 @@
-<!-- LOVABLE:BEGIN -->
-> [!IMPORTANT]
-> This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
-> published git history — force pushing, or rebasing/amending/squashing commits
-> that are already pushed — as it rewrites history on Lovable's side and the
-> user will likely lose their project history.
->
-> Commits you push to the connected branch sync back to Lovable and show up in
-> the editor, so keep the branch in a working state.
-<!-- LOVABLE:END -->
-
 # Development Workflow
 
 This section defines the permanent development workflow for this repository.
@@ -81,13 +70,7 @@ Only after approval:
 - Do not run migrations, seeders, service restarts, or any other production
   mutation unless explicitly approved.
 
-## 9. Lovable workflow
-
-- Preserve Lovable-related workflow files and configuration unless
-  explicitly approved otherwise.
-- Lovable may continue to be used for UI/UX prototyping.
-
-## 10. Communication
+## 9. Communication
 
 - Keep reports concise.
 - Mention modified files and verification results.
