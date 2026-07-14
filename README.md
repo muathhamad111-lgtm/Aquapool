@@ -10,8 +10,10 @@ Monorepo for the Aqua Pool Group platform.
 
 ## Status
 
-The frontend was originally built on Lovable + Supabase. Supabase is now a
-frozen, temporary dependency — no new schema/roles/policies are being added to
-it. The permanent backend is being built from scratch in `aqua-app/` and
-modules are being migrated over incrementally. See `docs/architecture.md` for
-the full picture and migration roadmap.
+The migration is complete. The permanent backend lives in `aqua-app/`
+(Laravel 12 + PostgreSQL REST API) and the frontend consumes it exclusively
+through a versioned `/api/v1` boundary. The original Lovable + Supabase stack
+has been fully removed — the frontend no longer depends on Supabase or any
+`@lovable.dev` tooling, and its Vite build is a standard, self-contained
+config. See [`docs/architecture.md`](docs/architecture.md) for the full
+picture.
