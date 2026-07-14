@@ -1,0 +1,30 @@
+# Root-level ignores for the monorepo. aqua-frontend/ and aqua-app/ each have
+# their own .gitignore that continues to govern everything inside those subtrees;
+# the rules here cover the repo root and fill gaps those sub-ignores miss.
+
+# OS
+.DS_Store
+
+# Editors
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+# Claude Code local tooling (agent defs, dev-server launch config) — local-only
+.claude/
+
+# Secrets — never commit real env files (the frontend .gitignore does not cover
+# .env, so it is listed here explicitly). Example/template files are kept.
+aqua-frontend/.env
+aqua-frontend/.env.*
+!aqua-frontend/.env.example
+aqua-app/.env
+aqua-app/.env.*
+!aqua-app/.env.example
+
+# aqua-app (Laravel) — ignored here so it applies even before the Laravel
+# scaffold's own .gitignore is present.
+aqua-app/vendor/
+aqua-app/node_modules/
+aqua-app/storage/*.key
+aqua-app/bootstrap/cache/*.php
