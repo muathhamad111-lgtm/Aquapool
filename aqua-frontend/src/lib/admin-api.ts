@@ -31,21 +31,49 @@ export type DbProject = {
   updated_at: string;
 };
 
+/** One row of a specification table: a label and its value, both bilingual. */
+export type DbSpecificationField = {
+  label_ar: string | null;
+  label_en: string | null;
+  value_ar: string | null;
+  value_en: string | null;
+};
+
+/** A heading with the rows grouped under it, e.g. "Key attributes". */
+export type DbSpecificationGroup = {
+  title_ar: string | null;
+  title_en: string | null;
+  fields: DbSpecificationField[];
+};
+
 export type DbProduct = {
   id: string;
+  /** Public URL key — products are linked by slug, never by id. */
+  slug: string;
   title_ar: string;
   title_en: string;
   caption_ar: string;
   caption_en: string;
   category: string;
   category_id: string | null;
+  /** The cover image. Always equal to images[0]; the API keeps them in sync. */
   image_url: string;
+  images: string[];
   price_label_ar: string;
   price_label_en: string;
   sort_order: number;
   is_published: boolean;
   created_at: string;
   updated_at: string;
+};
+
+/**
+ * Only `GET /products/{slug}` returns specifications — the list endpoint
+ * omits them so a catalogue page doesn't download every product's spec
+ * tables.
+ */
+export type DbProductDetail = DbProduct & {
+  specifications: DbSpecificationGroup[];
 };
 
 export type CategoryKind = "product" | "service" | "project";

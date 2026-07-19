@@ -3,9 +3,9 @@
 namespace App\Services;
 
 use App\Models\Product;
+use App\Support\ProductSlugger;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Support\Str;
 
 class ProductService
 {
@@ -84,27 +84,23 @@ class ProductService
             $images = array_values(array_filter((array) $attributes['images']));
             $attributes['images'] = $images;
             $attributes['image_url'] = $images[0] ?? null;
+        } elseif (array_key_exists('image_url', $attributes)) {
+            // A caller that sends only image_url — the single-image admin
+            // form, and any client written before galleries existed — must
+            // not leave a stale gallery behind that contradicts the cover.
+            // The new cover replaces the old one in place, keeping any
+            // additional images after it.
+            $rest = array_slice($product?->images ?? [], 1);
+            $cover = $attributes['image_url'];
+
+            $attributes['images'] = array_values(array_filter([$cover, ...$rest]));
         }
 
         return $attributes;
     }
 
-    /**
-     * Str::slug() strips Arabic to an empty string, so title_en is the
-     * source and a random suffix is the fallback — an empty slug would
-     * collide on the unique index for the second untitled product.
-     */
     private function uniqueSlug(string $source, ?string $ignoreId = null): string
     {
-        $base = Str::slug($source) ?: 'product-'.Str::lower(Str::random(8));
-
-        $slug = $base;
-        $suffix = 2;
-
-        while (Product::where('slug', $slug)->when($ignoreId, fn ($q) => $q->whereKeyNot($ignoreId))->exists()) {
-            $slug = $base.'-'.$suffix++;
-        }
-
-        return $slug;
+        return ProductSlugger::generate($source, $ignoreId);
     }
 }

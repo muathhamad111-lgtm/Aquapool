@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\Auditable;
+use App\Support\ProductSlugger;
 use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -41,6 +42,33 @@ class Product extends Model
             // inside the model and its traits.
             'specifications' => 'array',
         ];
+    }
+
+    /**
+     * `slug` is NOT NULL, and ProductService is not the only writer —
+     * seeders, factories and tinker create products directly. Filling it
+     * here means a missing slug can never become a database error at a
+     * call site that has no business knowing how slugs are built.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (Product $product) {
+            if (blank($product->slug)) {
+                $product->slug = ProductSlugger::generate($product->title_en ?? '');
+            }
+        });
+
+        // A product with a cover but an empty gallery would show its image
+        // in the catalogue and nothing on the detail page. ProductService
+        // handles the richer cases (replacing the cover, reordering,
+        // clearing); this only covers the empty gallery a direct write
+        // leaves behind. Deliberately does nothing when the gallery is
+        // already populated, or when the cover was cleared on purpose.
+        static::saving(function (Product $product) {
+            if (blank($product->images) && filled($product->image_url)) {
+                $product->images = [$product->image_url];
+            }
+        });
     }
 
     // Named productCategory(), not category(), because `category` is

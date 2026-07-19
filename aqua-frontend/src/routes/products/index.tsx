@@ -8,7 +8,7 @@ import { CategoryFilterCascader } from "@/components/CategoryFilterCascader";
 import type { DbProductCategory } from "@/lib/admin-api";
 import { useReveal } from "@/lib/motion";
 
-export const Route = createFileRoute("/products")({
+export const Route = createFileRoute("/products/")({
   head: () => ({
     meta: [
       { title: "Products — Aqua Pool Group | المنتجات" },
@@ -129,8 +129,10 @@ function ProductsPage() {
               {filtered.map((p) => {
                 const leafCat = labelFor(p.category_id);
                 return (
-                  <div
+                  <Link
                     key={p.id}
+                    to="/products/$slug"
+                    params={{ slug: p.slug }}
                     className="group bento-card flex flex-col transition-transform duration-300 ease-out hover:-translate-y-1"
                   >
                     <div className="aspect-[4/5] overflow-hidden bg-sand relative">
@@ -157,16 +159,18 @@ function ProductsPage() {
                         <span className="text-xs font-bold text-deep">
                           {pick(p.price_label_ar, p.price_label_en, lang)}
                         </span>
-                        <Link
-                          to="/contact"
-                          className="size-8 rounded-full bg-mint/30 text-deep grid place-items-center hover:bg-deep hover:text-mint transition-colors"
-                          aria-label={t.products.inquire}
+                        {/* The whole card is the link now, so this is a
+                            visual affordance only — nesting a second <a>
+                            inside one is invalid HTML. */}
+                        <span
+                          className="size-8 rounded-full bg-mint/30 text-deep grid place-items-center group-hover:bg-deep group-hover:text-mint transition-colors"
+                          aria-hidden="true"
                         >
                           <ArrowUpRight className="size-4" />
-                        </Link>
+                        </span>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 );
               })}
             </div>

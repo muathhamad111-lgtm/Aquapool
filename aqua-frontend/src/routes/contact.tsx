@@ -33,6 +33,13 @@ type ContactSetting = {
 };
 
 export const Route = createFileRoute("/contact")({
+  // `?subject=` lets a product detail page open this form already
+  // identifying the product being asked about. Anything else in the query
+  // string is dropped rather than rejected — a shared or stale link with
+  // extra params must still open the contact form.
+  validateSearch: (search: Record<string, unknown>): { subject?: string } => ({
+    subject: typeof search.subject === "string" ? search.subject : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Contact — Aqua Pool Group | اتصل بنا" },
@@ -67,7 +74,8 @@ function ContactPage() {
   const [formProjectType, setFormProjectType] = useState("");
   const [formBudget, setFormBudget] = useState("");
   const [formTimeline, setFormTimeline] = useState("");
-  const [formSubject, setFormSubject] = useState("");
+  // Seeded from ?subject= (a product enquiry), and editable from there.
+  const [formSubject, setFormSubject] = useState(Route.useSearch().subject ?? "");
   const [formMessage, setFormMessage] = useState("");
   const submitMessage = useSubmitMessage();
 

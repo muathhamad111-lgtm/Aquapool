@@ -125,6 +125,32 @@ class ProductSlugAndGalleryTest extends TestCase
         $response->assertStatus(200)->assertJsonPath('data.slug', 'stable-slug');
     }
 
+    /**
+     * Regression guard: ProductSeeder and any other direct Eloquent write
+     * bypass ProductService entirely. `slug` is NOT NULL, so without the
+     * model's creating hook, seeding a fresh environment fails outright —
+     * which is exactly what happened before that hook existed.
+     */
+    public function test_a_product_created_directly_through_eloquent_still_gets_a_slug(): void
+    {
+        $product = Product::create([
+            'title_ar' => 'مضخة',
+            'title_en' => 'Direct Pump',
+            'category' => 'general',
+        ]);
+
+        $this->assertSame('direct-pump', $product->slug);
+    }
+
+    public function test_two_directly_created_products_do_not_collide(): void
+    {
+        $first = Product::create(['title_ar' => 'أ', 'title_en' => 'Same Title', 'category' => 'general']);
+        $second = Product::create(['title_ar' => 'ب', 'title_en' => 'Same Title', 'category' => 'general']);
+
+        $this->assertSame('same-title', $first->slug);
+        $this->assertSame('same-title-2', $second->slug);
+    }
+
     public function test_the_first_image_becomes_the_cover(): void
     {
         $response = $this->actingAs($this->actingAsStaff(), 'sanctum')
@@ -159,6 +185,37 @@ class ProductSlugAndGalleryTest extends TestCase
         $response->assertStatus(200);
         $this->assertNull($response->json('data.image_url'));
         $this->assertSame([], $response->json('data.images'));
+    }
+
+    /**
+     * The single-image admin form sends image_url and no images array. It
+     * must not leave a stale gallery behind that contradicts the new cover —
+     * the detail page would then show the old image while the catalogue
+     * showed the new one.
+     */
+    public function test_sending_only_a_cover_replaces_the_first_gallery_image(): void
+    {
+        $product = Product::factory()->create([
+            'image_url' => '/old.jpg',
+            'images' => ['/old.jpg', '/second.jpg'],
+        ]);
+
+        $response = $this->actingAs($this->actingAsStaff(), 'sanctum')
+            ->patchJson("/api/v1/admin/products/{$product->id}", $this->payload(['image_url' => '/new.jpg']));
+
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.image_url', '/new.jpg');
+        // The replaced cover leads; the rest of the gallery survives.
+        $response->assertJsonPath('data.images', ['/new.jpg', '/second.jpg']);
+    }
+
+    public function test_creating_with_only_a_cover_seeds_the_gallery(): void
+    {
+        $response = $this->actingAs($this->actingAsStaff(), 'sanctum')
+            ->postJson('/api/v1/admin/products', $this->payload(['image_url' => '/only.jpg']));
+
+        $response->assertStatus(201);
+        $response->assertJsonPath('data.images', ['/only.jpg']);
     }
 
     public function test_specification_groups_round_trip_through_a_write(): void

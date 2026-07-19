@@ -32,7 +32,11 @@ export const Route = createFileRoute("/_authenticated/dashboard/products")({
   component: ProductsAdmin,
 });
 
-type Form = Omit<DbProduct, "id" | "created_at" | "updated_at">;
+// `slug` and `images` are omitted deliberately: this form still edits a
+// single cover through image_url, and the API generates the slug and keeps
+// images[0] in sync with that cover. The gallery and specifications editors
+// land in the next change.
+type Form = Omit<DbProduct, "id" | "created_at" | "updated_at" | "slug" | "images">;
 const empty: Form = {
   title_ar: "",
   title_en: "",

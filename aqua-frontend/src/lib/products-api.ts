@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
-import type { DbProduct } from "@/lib/admin-api";
+import type { DbProduct, DbProductDetail, DbSpecificationGroup } from "@/lib/admin-api";
 
 const ADMIN_QUERY_KEY = ["admin", "products"];
 const PUBLIC_QUERY_KEY = ["public", "products"];
@@ -11,6 +11,22 @@ export function usePublicProducts() {
     queryKey: PUBLIC_QUERY_KEY,
     queryFn: () => apiClient.get<DbProduct[]>("/api/v1/products"),
     staleTime: 60_000,
+  });
+}
+
+/**
+ * One published product with its specification groups, for the detail page.
+ * An unknown slug — or a product that exists but isn't published — is a 404
+ * from the API and surfaces here as a failed query.
+ */
+export function usePublicProduct(slug: string) {
+  return useQuery({
+    queryKey: [...PUBLIC_QUERY_KEY, slug],
+    queryFn: () => apiClient.get<DbProductDetail>(`/api/v1/products/${slug}`),
+    staleTime: 60_000,
+    // A 404 means the product isn't public; retrying can't change that, and
+    // the default 3 retries would only delay the not-found state.
+    retry: false,
   });
 }
 
@@ -39,6 +55,9 @@ type ProductPayload = {
   category_id?: string | null;
   sort_order?: number;
   is_published?: boolean;
+  slug?: string;
+  images?: string[];
+  specifications?: DbSpecificationGroup[];
 };
 
 export function useCreateProduct() {
