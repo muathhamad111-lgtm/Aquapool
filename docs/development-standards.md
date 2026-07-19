@@ -140,10 +140,27 @@ request. It is the automated enforcement of the rules above — a red CI run
 means the change isn't ready, not that the check is wrong.
 
 - **`aqua-app` job**: `./vendor/bin/pint --test` (formatting) then
-  `php artisan test`. The suite runs on sqlite `:memory:` per `phpunit.xml`,
-  so no database service container is needed. Production is PostgreSQL — if
-  a test ever genuinely depends on Postgres-only behavior, add a service
-  container to the workflow rather than weakening the test.
+  `php artisan test`, **against a PostgreSQL service container** — the same
+  engine as production. The job's `DB_*` environment variables override
+  `phpunit.xml`'s sqlite defaults (PHPUnit does not overwrite a variable
+  already set in the environment unless the entry is `force="true"`).
+
+  Locally, `php artisan test` still defaults to sqlite `:memory:` because
+  it is instant. That difference is a known trap, not a convenience: the
+  first CI run caught two defects sqlite had been hiding — migrations
+  emitting `ALTER TABLE ... ADD CONSTRAINT` that sqlite silently ignored,
+  and assertions that only passed because sqlite preserves JSON key order
+  where `jsonb` normalizes it. **CI on PostgreSQL is the authority.** When
+  touching migrations, raw SQL, or `jsonb` columns, run the suite against
+  Postgres locally too:
+
+  ```bash
+  createdb aqua_app_test
+  DB_CONNECTION=pgsql DB_DATABASE=aqua_app_test php artisan test
+  ```
+
+  Compare JSON payloads with `assertEquals`, never `assertSame`: key order
+  in a JSON object carries no meaning, and `jsonb` does not preserve it.
 - **`aqua-frontend` job**: `bun install --frozen-lockfile` (CI must build
   exactly what `bun.lock` pins), then `lint`, `typecheck` (`tsc --noEmit`),
   then `build`. The build is a compile check only; its artifact is never

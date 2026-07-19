@@ -46,7 +46,9 @@ class BulkUpdateMessageStatusTest extends TestCase
             ]);
         }
         $log = AuditLog::where('entity_id', $messages->first()->id)->firstOrFail();
-        $this->assertSame(['from' => 'new', 'to' => 'in_progress'], $log->details);
+        // assertEquals, not assertSame: `details` is jsonb in PostgreSQL,
+        // which normalizes key order. Key order carries no meaning here.
+        $this->assertEquals(['from' => 'new', 'to' => 'in_progress'], $log->details);
     }
 
     public function test_nonexistent_id_fails_validation(): void

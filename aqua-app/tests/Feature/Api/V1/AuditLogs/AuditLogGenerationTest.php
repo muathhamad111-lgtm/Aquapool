@@ -131,7 +131,11 @@ class AuditLogGenerationTest extends TestCase
         ]);
 
         $log = AuditLog::where('entity_id', (string) $target->id)->where('action', 'status_change')->firstOrFail();
-        $this->assertSame(['from' => 'pending', 'to' => 'done'], $log->details);
+        // assertEquals, not assertSame: `details` is jsonb in PostgreSQL,
+        // which normalizes key order (shortest key first), so the round-trip
+        // returns ['to' => ..., 'from' => ...]. Key order in a JSON object
+        // carries no meaning — only the mapping does.
+        $this->assertEquals(['from' => 'pending', 'to' => 'done'], $log->details);
     }
 
     public function test_auditas_escape_hatch_without_an_authenticated_actor_does_not_write_an_audit_log(): void

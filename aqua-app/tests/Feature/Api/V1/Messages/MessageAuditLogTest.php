@@ -29,7 +29,9 @@ class MessageAuditLogTest extends TestCase
         $this->assertSame('status_change', $log->action);
         $this->assertSame('message', $log->entity_type);
         $this->assertSame('أحمد — ahmed@example.com', $log->entity_label);
-        $this->assertSame(['from' => 'new', 'to' => 'replied'], $log->details);
+        // assertEquals, not assertSame: `details` is jsonb in PostgreSQL,
+        // which normalizes key order. Key order carries no meaning here.
+        $this->assertEquals(['from' => 'new', 'to' => 'replied'], $log->details);
         $this->assertSame($staff->id, $log->user_id);
     }
 

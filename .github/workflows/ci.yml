@@ -18,10 +18,38 @@ jobs:
       run:
         working-directory: aqua-app
 
-    # The suite runs against sqlite :memory: (see phpunit.xml), so no
-    # service container is needed. Production is PostgreSQL — if a test
-    # ever depends on a Postgres-only behaviour, add a service here rather
-    # than weakening the test.
+    # Runs against PostgreSQL, not phpunit.xml's sqlite default, because
+    # production is PostgreSQL and the schema uses Postgres-specific
+    # features (jsonb columns, CHECK constraints added via raw ALTER
+    # TABLE). Testing on sqlite hid two real defects: migrations emitting
+    # DDL sqlite silently ignored, and assertions that only held because
+    # sqlite preserves JSON key order where jsonb does not.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: aqua_app_test
+          POSTGRES_USER: aqua_app
+          POSTGRES_PASSWORD: secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      # These override phpunit.xml's <env> entries: PHPUnit does not
+      # overwrite a variable that is already set in the environment unless
+      # the entry is marked force="true".
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: aqua_app_test
+      DB_USERNAME: aqua_app
+      DB_PASSWORD: secret
+
     steps:
       - uses: actions/checkout@v4
 
@@ -29,7 +57,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: "8.4"
-          extensions: mbstring, pdo_sqlite, sqlite3, bcmath, intl
+          extensions: mbstring, pdo_pgsql, pgsql, bcmath, intl
           coverage: none
 
       - name: Cache composer packages
