@@ -107,6 +107,9 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
 
+      - name: Test
+        run: bun run test
+
       - name: Build
         # A compile check only — this artifact is never deployed. The real
         # VITE_API_URL is injected from the shared .env on the server (see

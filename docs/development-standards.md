@@ -163,14 +163,37 @@ means the change isn't ready, not that the check is wrong.
   in a JSON object carries no meaning, and `jsonb` does not preserve it.
 - **`aqua-frontend` job**: `bun install --frozen-lockfile` (CI must build
   exactly what `bun.lock` pins), then `lint`, `typecheck` (`tsc --noEmit`),
-  then `build`. The build is a compile check only; its artifact is never
-  deployed, so `VITE_API_URL` is a placeholder there — the real value comes
-  from the server's shared `.env` via `scripts/deploy-frontend.sh`.
+  `test` (vitest), then `build`. The build is a compile check only; its
+  artifact is never deployed, so `VITE_API_URL` is a placeholder there — the
+  real value comes from the server's shared `.env` via
+  `scripts/deploy-frontend.sh`.
 
-There is no frontend test runner yet. Until there is, `typecheck` + `build`
-are the only automated safety net React code has, which is another reason
-layer 10 (Feature Tests in Laravel) is non-negotiable: business logic that
-lives in Laravel is the logic that's actually tested.
+## Frontend tests
+
+`bun run test` (vitest, jsdom) covers the frontend's non-visual logic. Its
+config is `vitest.config.ts`, deliberately separate from `vite.config.ts` so
+a test run doesn't drag in the tanstackStart plugin or nitro. Tests sit next
+to what they test, as `*.test.ts`.
+
+This is **not** a general React testing layer, and it must not become one.
+Business logic lives in Laravel and is tested there (layer 10) — that rule
+is unchanged. What vitest covers is the code React genuinely owns and that
+would otherwise be verified only by clicking around:
+
+- `api-client.ts` — every request goes through it: the `data` unwrap, the
+  `getPage` exception to it, 204 handling, bearer-token attachment, the
+  FormData content-type carve-out, and `ApiError` construction (including
+  non-JSON error bodies).
+- Derived-state helpers such as `statusCountsFrom` / `entityCountsFrom`.
+- Hooks with timing or lifecycle behavior, e.g. `useDebouncedValue`.
+
+Don't add snapshot tests of rendered markup — they encode styling churn as
+test failures without catching real defects.
+
+`src/test-setup.ts` installs an in-memory `localStorage` double. jsdom as
+configured here exposes none, and Node's global of that name is inert unless
+the process was started with `--localstorage-file`; the app's bare
+`localStorage.*` calls are correct and work in every browser.
 
 ## Audit logging
 
