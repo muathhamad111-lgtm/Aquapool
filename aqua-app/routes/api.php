@@ -46,7 +46,9 @@ Route::prefix('v1')->group(function () {
     Route::post('/messages', [MessageController::class, 'store'])->middleware('throttle:5,1');
 
     Route::prefix('admin')->group(function () {
-        Route::post('/auth/login', [AuthController::class, 'login']);
+        // Rate-limited (5/minute per email+IP) against credential stuffing —
+        // see the 'login' limiter in AppServiceProvider.
+        Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:login');
 
         Route::middleware('auth:sanctum')->group(function () {
             Route::post('/auth/logout', [AuthController::class, 'logout']);

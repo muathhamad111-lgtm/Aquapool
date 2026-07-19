@@ -8,6 +8,12 @@ Roles: `admin` (full access) and `user` (staff — full access except deleting u
 Public. Body: `{"email": string, "password": string}`.
 - `200` → `{"data": {"token": string, "user": {id, email, role, created_at, last_login_at}}}`
 - `422` → invalid credentials or validation error
+- `429` → rate limited: 5 attempts per minute, keyed by **email + IP** (the
+  `login` limiter in `AppServiceProvider`). Keyed by both rather than IP alone
+  so a shared office IP can't lock every admin out over one person's typos,
+  while an attacker cycling passwords against one account still trips the
+  limit immediately. The email part of the key is lower-cased, so changing
+  the casing can't reset the counter.
 
 ## `POST /auth/logout`
 Auth required. Revokes the token used for this request only (not other sessions).
