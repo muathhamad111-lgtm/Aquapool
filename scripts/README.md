@@ -46,49 +46,69 @@ Deployment and operational scripts.
   Note: the `staging` profile defaults to `PORT=3001` for its health check —
   adjust it in the script if staging listens on a different port.
 
-- `deploy-api.sh` — the same releases + atomic symlink swap + health check +
-  auto-rollback pattern, for the `aqua-app` Laravel API behind Nginx +
-  PHP-FPM. Deployed to `/root/scripts/` on the server.
+## Deploying the API (`aqua-app`)
 
-  **Not yet run against the server.** Verify `FPM_SERVICE`, `LIVE_LINK` and
-  `HEALTH_URL` in the profile block before the first deploy — the script
-  refuses to run if the systemd unit or `pg_dump` is missing rather than
-  guessing, but it cannot tell whether `/var/www/aqua-api` is really where
-  Nginx points.
+**There is no deploy script for the API in this repo, deliberately.** The
+server already has one, provisioned alongside the project and used for every
+release so far: `/var/www/aqua_app/deploy.sh`. An earlier version of this
+README documented a `scripts/deploy-api.sh` that was written without checking
+the server first; every one of its assumptions was wrong (`/var/www/aqua-api`,
+`php8.4-fpm`, running as root) and it has been deleted rather than left to
+mislead.
 
-  ```bash
-  # 1. From your machine, upload the fresh source (no vendor/.env/storage):
-  rsync -az --delete \
-    --exclude vendor --exclude .env --exclude storage --exclude node_modules \
-    aqua-app/  root@SERVER:/var/www/aqua-api-incoming/
+What is actually true on the server:
 
-  # 2. On the server:
-  /root/scripts/deploy-api.sh production /var/www/aqua-api-incoming
-  ```
+| | |
+|---|---|
+| App root | `/var/www/aqua_app` — `releases/<timestamp>/`, `shared/`, `current` symlink |
+| Runs as | the `aqua_app` Linux user; the script **refuses to run as root** |
+| PHP | `php8.5-fpm`, with a dedicated pool socket `/run/php/aqua_app.sock` |
+| Nginx root | `/var/www/aqua_app/current/public` |
+| Shared | `shared/.env` and `shared/storage` (uploaded images live here) |
+| Staging twin | `/var/www/aqua_app_staging`, database `aqua_app_staging`, at `staging-aqua-api.moathhamad.space` |
 
-  Rollback (code only — see below):
+The server script is rsync-based, not git-based: it expects the code to
+already be in the release directory. A deploy is four steps from your machine:
 
-  ```bash
-  /root/scripts/deploy-api.sh production --rollback            # list releases
-  /root/scripts/deploy-api.sh production --rollback 20260719-140233
-  ```
+```bash
+export SERVER=root@<droplet-ip>
+TS=$(date +%Y%m%d%H%M%S)
 
-  Three things differ from the frontend script, all Laravel-specific:
+ssh $SERVER "mkdir -p /var/www/aqua_app/releases/$TS"
 
-  - **`storage/` is shared**, living once under `<live>-shared/storage` and
-    symlinked into each release. Uploaded images (`ImageUploadService` writes
-    to the `public` disk) live there — a per-release `storage/` would make
-    every deploy silently lose every upload.
-  - **Migrations run before the symlink swap**, immediately after a `pg_dump`
-    taken in the same run under `/var/backups/aqua_app/pre-deploy/`. The new
-    code therefore never meets the old schema.
-  - **PHP-FPM is reloaded after the swap.** Nginx resolves the symlink per
-    request, but opcache caches compiled files by resolved path, so without
-    the reload the old release keeps being executed.
+rsync -az --delete \
+  --exclude vendor --exclude .env --exclude storage \
+  --exclude node_modules --exclude .git --exclude tests \
+  aqua-app/ $SERVER:/var/www/aqua_app/releases/$TS/
 
-  `--rollback` repoints the code symlink **only** — it never runs
-  `migrate:rollback`, which would destroy data on a release that has already
-  taken writes. Write migrations so the previous release can still run
-  against the new schema (add columns; don't rename or drop in the same
-  deploy). If a rollback genuinely needs the old schema, restore that run's
-  pre-deploy dump by hand.
+ssh $SERVER "chown -R aqua_app:aqua_app /var/www/aqua_app/releases/$TS"
+
+ssh $SERVER "sudo -u aqua_app /var/www/aqua_app/deploy.sh $TS --migrate"
+```
+
+Drop `--migrate` when the release has no new migrations. The script links
+shared resources, runs `composer install --no-dev`, migrates, caches
+config/routes/views, flips `current` atomically, reloads `php8.5-fpm`, and
+prunes to the last 5 releases.
+
+**Take a database backup first.** The server script runs `migrate --force`
+with no backup of its own, and the nightly dump can be up to 24 hours old:
+
+```bash
+ssh $SERVER "/root/scripts/backup-aqua-app-db.sh"
+```
+
+Rollback is repointing the symlink; migrations are never reverted
+automatically, because `migrate:rollback` on a release that has already taken
+writes destroys data. Write migrations the previous release can still run
+against (add columns; don't rename or drop in the same deploy):
+
+```bash
+ssh $SERVER "ls -1t /var/www/aqua_app/releases | head -5"
+ssh $SERVER "sudo -u aqua_app ln -sfn /var/www/aqua_app/releases/<TS> /var/www/aqua_app/current && sudo systemctl reload php8.5-fpm"
+```
+
+Note: staging's `deploy.sh` is git-based and still points at the old
+`AquaPoolWebsite` repo and a `feat/public-site-polish` branch. It needs its
+`REPO_URL`/`BRANCH` updated to this repo and `main` before staging can be
+used again.

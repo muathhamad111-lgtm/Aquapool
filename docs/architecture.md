@@ -52,10 +52,11 @@ aquapool/
   Policies, Migrations, Seeders, Feature Tests
 - Nightly `pg_dump` backup via `scripts/backup-aqua-app-db.sh` (cron 03:15,
   keeps 7 days)
-- Deploy: `scripts/deploy-api.sh` (releases + atomic symlink swap, shared
-  `storage/`, pre-migration dump, PHP-FPM reload, health check,
-  auto-rollback of the code). Not yet exercised against the server — verify
-  its profile block before the first run.
+- Deploy: the server's own `/var/www/aqua_app/deploy.sh` (releases + `current`
+  symlink, shared `.env`/`storage`, `php8.5-fpm` reload), driven by an rsync
+  from the local machine. There is **no API deploy script in this repo** —
+  see `scripts/README.md` for the runbook and why. Runs as the `aqua_app`
+  user, never root.
 - Unbounded, append-only reads (`/admin/audit-logs`, `/admin/messages`) are
   paginated and filtered in SQL; see `docs/api-foundation.md`
 
