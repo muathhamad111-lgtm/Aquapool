@@ -14,21 +14,10 @@ export function usePublicProducts() {
   });
 }
 
-/**
- * One published product with its specification groups, for the detail page.
- * An unknown slug — or a product that exists but isn't published — is a 404
- * from the API and surfaces here as a failed query.
- */
-export function usePublicProduct(slug: string) {
-  return useQuery({
-    queryKey: [...PUBLIC_QUERY_KEY, slug],
-    queryFn: () => apiClient.get<DbProductDetail>(`/api/v1/products/${slug}`),
-    staleTime: 60_000,
-    // A 404 means the product isn't public; retrying can't change that, and
-    // the default 3 retries would only delay the not-found state.
-    retry: false,
-  });
-}
+// The public detail page deliberately has no hook here: it fetches through
+// the route's own loader instead, which is what makes the product's title
+// and image available to `head` for SSR metadata and link previews. A
+// client-only hook cannot do that.
 
 /** Every product, published and unpublished — used by the admin dashboard. */
 export function useAdminProducts() {

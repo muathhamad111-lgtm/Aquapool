@@ -30,6 +30,26 @@ afterEach(() => {
 });
 
 describe("token storage", () => {
+  /**
+   * Route loaders run on the server during SSR, where `localStorage` does
+   * not exist. An unguarded reference there crashes the whole render, so
+   * every accessor must degrade to "no token" instead of throwing — public
+   * endpoints need no token anyway.
+   */
+  it("degrades to no token when localStorage is unavailable", async () => {
+    vi.stubGlobal("localStorage", undefined);
+
+    expect(getToken()).toBeNull();
+    expect(hasToken()).toBe(false);
+    expect(() => setToken("abc")).not.toThrow();
+    expect(() => clearToken()).not.toThrow();
+
+    // A public GET must still go through with no Authorization header.
+    const fetchMock = mockFetch(jsonResponse({ data: [] }));
+    await expect(apiClient.get("/api/v1/products")).resolves.toEqual([]);
+    expect(sentHeaders(fetchMock).has("Authorization")).toBe(false);
+  });
+
   it("round-trips a token and reports presence", () => {
     expect(getToken()).toBeNull();
     expect(hasToken()).toBe(false);

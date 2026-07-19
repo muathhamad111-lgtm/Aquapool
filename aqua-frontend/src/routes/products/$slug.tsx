@@ -1,52 +1,93 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowUpRight, ChevronLeft, ChevronRight, ImageOff, Loader2 } from "lucide-react";
+import { ArrowUpRight, ChevronLeft, ChevronRight, ImageOff } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
 import { pick, useProductCategories } from "@/lib/content";
-import { usePublicProduct } from "@/lib/products-api";
-import type { DbSpecificationGroup } from "@/lib/admin-api";
+import { apiClient } from "@/lib/api-client";
+import type { DbProductDetail, DbSpecificationGroup } from "@/lib/admin-api";
 
 export const Route = createFileRoute("/products/$slug")({
+  /**
+   * Runs on the server for the first render and on the client for
+   * navigations. Fetching here rather than in a hook is what lets `head`
+   * below build real per-product metadata — without it a shared link
+   * previews as the generic site title and a crawler that doesn't run
+   * JavaScript sees no product at all.
+   */
+  loader: async ({ params }) => {
+    try {
+      return await apiClient.get<DbProductDetail>(`/api/v1/products/${params.slug}`);
+    } catch {
+      // An unknown slug and an unpublished product are the same 404 from
+      // the API, and stay indistinguishable here. notFound() rather than a
+      // null return so the response carries a real 404 status — a page that
+      // says "not found" while answering 200 is a soft 404, which search
+      // engines index as a real page.
+      throw notFound();
+    }
+  },
+  notFoundComponent: ProductNotFound,
+  head: ({ loaderData }) => {
+    if (!loaderData) return {};
+
+    // Arabic first: it's the site's primary language and what the title
+    // and captions are actually written in.
+    const title = loaderData.title_ar || loaderData.title_en;
+    const description = loaderData.caption_ar || loaderData.caption_en || "";
+
+    return {
+      meta: [
+        { title: `${title} — Aqua Pool Group` },
+        { name: "description", content: description },
+        { property: "og:type", content: "product" },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+        // Both image tags, or neither: the root route sets a site-wide
+        // twitter:image, and overriding only og:image would pair the
+        // product's title with the generic site picture on X/Twitter.
+        ...(loaderData.image_url
+          ? [
+              { property: "og:image", content: loaderData.image_url },
+              { name: "twitter:image", content: loaderData.image_url },
+            ]
+          : []),
+      ],
+    };
+  },
   component: ProductDetailPage,
 });
 
+function ProductNotFound() {
+  const { lang } = useLang();
+
+  return (
+    <div className="container-x py-24 text-center">
+      <ImageOff className="size-10 mx-auto mb-4 text-muted-foreground/40" />
+      <h1 className="text-xl font-bold text-deep mb-2">
+        {lang === "ar" ? "المنتج غير موجود" : "Product not found"}
+      </h1>
+      <p className="text-sm text-muted-foreground mb-6">
+        {lang === "ar"
+          ? "قد يكون هذا المنتج قد أُزيل أو لم يعد متاحاً."
+          : "This product may have been removed or is no longer available."}
+      </p>
+      <Link
+        to="/products"
+        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-deep text-white text-sm font-semibold hover:bg-ocean transition-colors"
+      >
+        {lang === "ar" ? "العودة إلى الكتالوج" : "Back to catalogue"}
+      </Link>
+    </div>
+  );
+}
+
 function ProductDetailPage() {
-  const { slug } = Route.useParams();
+  const product = Route.useLoaderData();
   const { t, lang } = useLang();
-  const { data: product, isLoading, isError } = usePublicProduct(slug);
   const { data: categories = [] } = useProductCategories();
-
-  if (isLoading) {
-    return (
-      <div className="container-x py-24 grid place-items-center">
-        <Loader2 className="size-6 animate-spin text-teal" />
-      </div>
-    );
-  }
-
-  // An unpublished product and a nonexistent one are the same 404 from the
-  // API, and are deliberately the same message here.
-  if (isError || !product) {
-    return (
-      <div className="container-x py-24 text-center">
-        <ImageOff className="size-10 mx-auto mb-4 text-muted-foreground/40" />
-        <h1 className="text-xl font-bold text-deep mb-2">
-          {lang === "ar" ? "المنتج غير موجود" : "Product not found"}
-        </h1>
-        <p className="text-sm text-muted-foreground mb-6">
-          {lang === "ar"
-            ? "قد يكون هذا المنتج قد أُزيل أو لم يعد متاحاً."
-            : "This product may have been removed or is no longer available."}
-        </p>
-        <Link
-          to="/products"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-deep text-white text-sm font-semibold hover:bg-ocean transition-colors"
-        >
-          {lang === "ar" ? "العودة إلى الكتالوج" : "Back to catalogue"}
-        </Link>
-      </div>
-    );
-  }
 
   const title = pick(product.title_ar, product.title_en, lang);
   const caption = pick(product.caption_ar, product.caption_en, lang);

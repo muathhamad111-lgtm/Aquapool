@@ -12,16 +12,25 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * The admin token lives in localStorage, which does not exist during SSR.
+ * Every token accessor tolerates that rather than throwing: a route loader
+ * running on the server calls public endpoints, which need no token at all,
+ * and an unguarded `localStorage` reference there would crash the render.
+ */
+const browserStorage = (): Storage | null =>
+  typeof localStorage === "undefined" ? null : localStorage;
+
 export function getToken(): string | null {
-  return localStorage.getItem(TOKEN_KEY);
+  return browserStorage()?.getItem(TOKEN_KEY) ?? null;
 }
 
 export function setToken(token: string): void {
-  localStorage.setItem(TOKEN_KEY, token);
+  browserStorage()?.setItem(TOKEN_KEY, token);
 }
 
 export function clearToken(): void {
-  localStorage.removeItem(TOKEN_KEY);
+  browserStorage()?.removeItem(TOKEN_KEY);
 }
 
 export function hasToken(): boolean {
