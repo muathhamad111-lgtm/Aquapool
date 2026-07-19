@@ -46,9 +46,35 @@ ever written for a submission** — matches the existing, deliberate
 
 ## `GET /admin/messages`
 
-Auth required. Returns every message, ordered by `created_at` descending.
+Auth required. Paginated, newest first. The inbox grows with every contact
+form submission, so this endpoint never returns the whole table — filtering
+and searching happen in SQL, not in the browser.
 
-- `200` → `{"data": [MessageResource, ...]}`
+Query parameters (all optional):
+
+| Param | Rules | Default | Notes |
+|---|---|---|---|
+| `page` | integer, min 1 | 1 | |
+| `per_page` | integer, 1–100 | 25 | Capped so a client can't request the whole inbox |
+| `status` | one of `App\Enums\MessageStatus` | — | `new`, `in_progress`, `replied`, `archived` |
+| `search` | string, max 255 | — | Case-insensitive substring match across `name`, `email`, `subject`, `message` |
+
+`status` and `search` combine (AND).
+
+- `200` → `{"data": [MessageResource, ...], "meta": {"current_page": 1, "per_page": 25, "total": 340, "last_page": 14, "status_counts": {"new": 12, "in_progress": 3, "replied": 300, "archived": 25}}}`
+- `422` → invalid `page` / `per_page` / `status` / `search`
+
+**`meta.status_counts`** covers the whole inbox, deliberately ignoring the
+active filters — it backs the admin page's status chips, which must keep
+showing each status's total. Every status is always present, zero included,
+so a client rendering one chip per status never has to treat a missing key
+as zero.
+
+**Ordering** is `created_at DESC, id DESC`. The `id` tiebreaker is required:
+`messages` has no `updated_at` and a burst of submissions can share a
+`created_at` second, so `created_at` alone is not a unique ordering — rows
+sharing a timestamp could otherwise repeat on one page and vanish from the
+next.
 
 ## `GET /admin/messages/summary`
 

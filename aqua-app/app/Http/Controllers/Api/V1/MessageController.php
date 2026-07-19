@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Requests\V1\Messages\BulkDeleteMessageRequest;
 use App\Http\Requests\V1\Messages\BulkUpdateMessageStatusRequest;
+use App\Http\Requests\V1\Messages\IndexMessageRequest;
 use App\Http\Requests\V1\Messages\StoreMessageRequest;
 use App\Http\Requests\V1\Messages\UpdateMessageStatusRequest;
 use App\Http\Resources\V1\MessageResource;
@@ -26,11 +27,15 @@ class MessageController extends ApiController
         return $this->created(new MessageResource($message));
     }
 
-    public function index(): JsonResponse
+    public function index(IndexMessageRequest $request): JsonResponse
     {
         $this->authorize('viewAny', Message::class);
 
-        return $this->success(MessageResource::collection($this->messages->all()));
+        return $this->paginated(
+            $this->messages->paginate($request->validated()),
+            MessageResource::class,
+            ['status_counts' => $this->messages->statusCounts()],
+        );
     }
 
     public function summary(): JsonResponse

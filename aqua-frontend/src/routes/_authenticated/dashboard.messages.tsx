@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Loader2,
   Mail,
@@ -22,11 +22,14 @@ import { ApiError } from "@/lib/api-client";
 import { type DbMessage } from "@/lib/admin-api";
 import {
   useAdminMessages,
+  statusCountsFrom,
   useUpdateMessageStatus,
   useBulkUpdateMessageStatus,
   useDeleteMessage,
   useBulkDeleteMessages,
 } from "@/lib/messages-api";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { Pagination } from "@/components/admin/Pagination";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -83,6 +86,8 @@ function MessagesAdmin() {
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(24);
 
   const toggleOne = (id: string) =>
     setSelectedIds((prev) => {
@@ -93,37 +98,28 @@ function MessagesAdmin() {
     });
   const clearSelection = () => setSelectedIds(new Set());
 
-  const list = useAdminMessages();
+  const debouncedSearch = useDebouncedValue(search);
 
-  const counts = useMemo(() => {
-    const c: Record<string, number> = { all: 0, new: 0, in_progress: 0, replied: 0, archived: 0 };
-    list.data?.forEach((m) => {
-      c.all += 1;
-      c[m.status] = (c[m.status] ?? 0) + 1;
-    });
-    return c;
-  }, [list.data]);
+  // Any change to what's being queried invalidates the current page number
+  // — page 5 of an unfiltered inbox is rarely page 5 of a filtered one, and
+  // is often past the end of it. Selections are per-page, so they go too.
+  useEffect(() => {
+    setPage(1);
+    setSelectedIds(new Set());
+  }, [filter, debouncedSearch, pageSize]);
 
-  const filtered = useMemo(() => {
-    let rows = list.data ?? [];
-    if (filter !== "all") rows = rows.filter((m) => m.status === filter);
-    if (search.trim()) {
-      const q = search.trim().toLowerCase();
-      rows = rows.filter(
-        (m) =>
-          m.name?.toLowerCase().includes(q) ||
-          m.email?.toLowerCase().includes(q) ||
-          m.subject?.toLowerCase().includes(q) ||
-          m.message?.toLowerCase().includes(q),
-      );
-    }
-    return rows;
-  }, [list.data, filter, search]);
+  const list = useAdminMessages({
+    page,
+    perPage: pageSize,
+    status: filter,
+    search: debouncedSearch,
+  });
 
-  const selected = useMemo(
-    () => list.data?.find((m) => m.id === selectedId) ?? null,
-    [list.data, selectedId],
-  );
+  const rows = useMemo(() => list.data?.data ?? [], [list.data]);
+  const total = list.data?.meta.total ?? 0;
+  const counts = useMemo(() => statusCountsFrom(list.data?.meta), [list.data]);
+
+  const selected = useMemo(() => rows.find((m) => m.id === selectedId) ?? null, [rows, selectedId]);
 
   const updateMessageStatus = useUpdateMessageStatus();
   const bulkUpdateMessageStatus = useBulkUpdateMessageStatus();
@@ -184,13 +180,15 @@ function MessagesAdmin() {
     },
   };
 
-  const allFilteredSelected = filtered.length > 0 && filtered.every((m) => selectedIds.has(m.id));
-  const someFilteredSelected = filtered.some((m) => selectedIds.has(m.id));
-  const toggleAllFiltered = () => {
+  // "Select all" means all rows on the current page — the only rows the
+  // client actually holds now that the inbox is served a page at a time.
+  const allPageSelected = rows.length > 0 && rows.every((m) => selectedIds.has(m.id));
+  const somePageSelected = rows.some((m) => selectedIds.has(m.id));
+  const toggleAllOnPage = () => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      if (allFilteredSelected) filtered.forEach((m) => next.delete(m.id));
-      else filtered.forEach((m) => next.add(m.id));
+      if (allPageSelected) rows.forEach((m) => next.delete(m.id));
+      else rows.forEach((m) => next.add(m.id));
       return next;
     });
   };
@@ -235,140 +233,151 @@ function MessagesAdmin() {
       {/* Layout */}
       <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-4">
         {/* List */}
-        <div className="bg-white border border-border rounded-2xl overflow-hidden flex flex-col max-h-[72vh]">
-          <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-2">
-            <button
-              type="button"
-              onClick={toggleAllFiltered}
-              disabled={filtered.length === 0}
-              className="flex items-center gap-2 text-deep text-sm font-bold disabled:opacity-50"
-              title={allFilteredSelected ? "إلغاء تحديد الكل" : "تحديد الكل"}
-            >
-              {allFilteredSelected ? (
-                <CheckSquare className="size-4 text-teal" />
-              ) : (
-                <Square
-                  className={`size-4 ${someFilteredSelected ? "text-teal" : "text-muted-foreground"}`}
-                />
-              )}
-              {filter === "all" ? "كل الرسائل" : STATUS_META[filter as Status].label}
-            </button>
-            <span className="text-xs text-muted-foreground tabular-nums">
-              {selectedIds.size > 0 ? `${selectedIds.size} محددة` : `${filtered.length} رسالة`}
-            </span>
-          </div>
-          {selectedIds.size > 0 && (
-            <div className="px-3 py-2 border-b border-border bg-mint/10 flex items-center gap-1.5 flex-wrap">
-              <span className="text-xs font-bold text-deep me-1">إجراء جماعي:</span>
-              {STATUSES.map((s) => {
-                const meta = STATUS_META[s];
-                return (
-                  <button
-                    key={s}
-                    disabled={bulkBusy}
-                    onClick={() => bulkUpdate.mutate({ ids: Array.from(selectedIds), status: s })}
-                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border ${meta.pill} hover:opacity-80 disabled:opacity-50 transition`}
-                    title={`نقل إلى: ${meta.label}`}
-                  >
-                    <meta.icon className="size-3" />
-                    {meta.label}
-                  </button>
-                );
-              })}
+        <div className="min-w-0 space-y-3">
+          <div className="bg-white border border-border rounded-2xl overflow-hidden flex flex-col max-h-[72vh]">
+            <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-2">
               <button
-                disabled={bulkBusy}
-                onClick={() => setBulkDeleteOpen(true)}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive hover:text-white disabled:opacity-50 transition"
+                type="button"
+                onClick={toggleAllOnPage}
+                disabled={rows.length === 0}
+                className="flex items-center gap-2 text-deep text-sm font-bold disabled:opacity-50"
+                title={allPageSelected ? "إلغاء تحديد هذه الصفحة" : "تحديد هذه الصفحة"}
               >
-                <Trash2 className="size-3" />
-                حذف
+                {allPageSelected ? (
+                  <CheckSquare className="size-4 text-teal" />
+                ) : (
+                  <Square
+                    className={`size-4 ${somePageSelected ? "text-teal" : "text-muted-foreground"}`}
+                  />
+                )}
+                {filter === "all" ? "كل الرسائل" : STATUS_META[filter as Status].label}
               </button>
-              <button
-                onClick={clearSelection}
-                className="ms-auto text-[11px] text-muted-foreground hover:text-deep"
-              >
-                إلغاء التحديد
-              </button>
+              <span className="text-xs text-muted-foreground tabular-nums">
+                {selectedIds.size > 0 ? `${selectedIds.size} محددة` : `${total} رسالة`}
+              </span>
             </div>
-          )}
-          <div className="overflow-y-auto flex-1">
-            {list.isLoading ? (
-              <div className="p-12 grid place-items-center">
-                <Loader2 className="size-5 animate-spin text-teal" />
-              </div>
-            ) : filtered.length === 0 ? (
-              <div className="p-12 text-center text-muted-foreground text-sm">
-                <Inbox className="size-10 mx-auto mb-3 opacity-30" />
-                {search ? "لا توجد نتائج مطابقة للبحث." : "لا توجد رسائل في هذه الحالة."}
-              </div>
-            ) : (
-              <ul className="divide-y divide-border">
-                {filtered.map((m) => {
-                  const meta = STATUS_META[(m.status as Status) ?? "new"] ?? STATUS_META.new;
-                  const active = selectedId === m.id;
-                  const checked = selectedIds.has(m.id);
+            {selectedIds.size > 0 && (
+              <div className="px-3 py-2 border-b border-border bg-mint/10 flex items-center gap-1.5 flex-wrap">
+                <span className="text-xs font-bold text-deep me-1">إجراء جماعي:</span>
+                {STATUSES.map((s) => {
+                  const meta = STATUS_META[s];
                   return (
-                    <li key={m.id} className="relative">
-                      <div
-                        className={`flex items-stretch transition-colors ${
-                          active ? "bg-mint/10" : checked ? "bg-teal/5" : "hover:bg-muted/40"
-                        }`}
-                      >
-                        {active && (
-                          <span className="absolute inset-y-2 start-0 w-1 rounded-full bg-teal" />
-                        )}
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleOne(m.id);
-                          }}
-                          className="ps-4 pe-1 flex items-center justify-center"
-                          title={checked ? "إلغاء التحديد" : "تحديد"}
-                        >
-                          {checked ? (
-                            <CheckSquare className="size-4 text-teal" />
-                          ) : (
-                            <Square className="size-4 text-muted-foreground/60" />
-                          )}
-                        </button>
-                        <button
-                          onClick={() => setSelectedId(m.id)}
-                          className="flex-1 text-start p-4 ps-2 block min-w-0"
-                        >
-                          <div className="flex items-center justify-between gap-2 mb-1">
-                            <span className="font-bold text-deep text-sm truncate flex items-center gap-2">
-                              <span className={`size-1.5 rounded-full ${meta.dot}`} />
-                              {m.name}
-                            </span>
-                            <span
-                              className={`text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${meta.pill}`}
-                            >
-                              {meta.label}
-                            </span>
-                          </div>
-                          <div className="text-xs text-muted-foreground truncate">
-                            {m.subject || m.project_type || m.email}
-                          </div>
-                          <div
-                            className="text-[11px] text-muted-foreground/80 mt-1 tabular-nums"
-                            dir="ltr"
-                          >
-                            {new Date(m.created_at).toLocaleString("ar-EG-u-nu-latn", {
-                              day: "2-digit",
-                              month: "short",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </div>
-                        </button>
-                      </div>
-                    </li>
+                    <button
+                      key={s}
+                      disabled={bulkBusy}
+                      onClick={() => bulkUpdate.mutate({ ids: Array.from(selectedIds), status: s })}
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border ${meta.pill} hover:opacity-80 disabled:opacity-50 transition`}
+                      title={`نقل إلى: ${meta.label}`}
+                    >
+                      <meta.icon className="size-3" />
+                      {meta.label}
+                    </button>
                   );
                 })}
-              </ul>
+                <button
+                  disabled={bulkBusy}
+                  onClick={() => setBulkDeleteOpen(true)}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive hover:text-white disabled:opacity-50 transition"
+                >
+                  <Trash2 className="size-3" />
+                  حذف
+                </button>
+                <button
+                  onClick={clearSelection}
+                  className="ms-auto text-[11px] text-muted-foreground hover:text-deep"
+                >
+                  إلغاء التحديد
+                </button>
+              </div>
             )}
+            <div className="overflow-y-auto flex-1">
+              {list.isLoading ? (
+                <div className="p-12 grid place-items-center">
+                  <Loader2 className="size-5 animate-spin text-teal" />
+                </div>
+              ) : rows.length === 0 ? (
+                <div className="p-12 text-center text-muted-foreground text-sm">
+                  <Inbox className="size-10 mx-auto mb-3 opacity-30" />
+                  {search ? "لا توجد نتائج مطابقة للبحث." : "لا توجد رسائل في هذه الحالة."}
+                </div>
+              ) : (
+                <ul className="divide-y divide-border">
+                  {rows.map((m) => {
+                    const meta = STATUS_META[(m.status as Status) ?? "new"] ?? STATUS_META.new;
+                    const active = selectedId === m.id;
+                    const checked = selectedIds.has(m.id);
+                    return (
+                      <li key={m.id} className="relative">
+                        <div
+                          className={`flex items-stretch transition-colors ${
+                            active ? "bg-mint/10" : checked ? "bg-teal/5" : "hover:bg-muted/40"
+                          }`}
+                        >
+                          {active && (
+                            <span className="absolute inset-y-2 start-0 w-1 rounded-full bg-teal" />
+                          )}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleOne(m.id);
+                            }}
+                            className="ps-4 pe-1 flex items-center justify-center"
+                            title={checked ? "إلغاء التحديد" : "تحديد"}
+                          >
+                            {checked ? (
+                              <CheckSquare className="size-4 text-teal" />
+                            ) : (
+                              <Square className="size-4 text-muted-foreground/60" />
+                            )}
+                          </button>
+                          <button
+                            onClick={() => setSelectedId(m.id)}
+                            className="flex-1 text-start p-4 ps-2 block min-w-0"
+                          >
+                            <div className="flex items-center justify-between gap-2 mb-1">
+                              <span className="font-bold text-deep text-sm truncate flex items-center gap-2">
+                                <span className={`size-1.5 rounded-full ${meta.dot}`} />
+                                {m.name}
+                              </span>
+                              <span
+                                className={`text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${meta.pill}`}
+                              >
+                                {meta.label}
+                              </span>
+                            </div>
+                            <div className="text-xs text-muted-foreground truncate">
+                              {m.subject || m.project_type || m.email}
+                            </div>
+                            <div
+                              className="text-[11px] text-muted-foreground/80 mt-1 tabular-nums"
+                              dir="ltr"
+                            >
+                              {new Date(m.created_at).toLocaleString("ar-EG-u-nu-latn", {
+                                day: "2-digit",
+                                month: "short",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </div>
+                          </button>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
           </div>
+          {total > 0 && (
+            <Pagination
+              page={page}
+              pageSize={pageSize}
+              total={total}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+            />
+          )}
         </div>
 
         {/* Detail */}

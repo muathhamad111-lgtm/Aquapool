@@ -5,16 +5,65 @@ namespace App\Services;
 use App\Enums\AuditAction;
 use App\Enums\MessageStatus;
 use App\Models\Message;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
 class MessageService
 {
+    public const DEFAULT_PER_PAGE = 25;
+
     /**
-     * @return Collection<int, Message>
+     * @param  array{page?: int, per_page?: int, status?: string, search?: string}  $filters
+     * @return LengthAwarePaginator<int, Message>
      */
-    public function all(): Collection
+    public function paginate(array $filters = []): LengthAwarePaginator
     {
-        return Message::orderBy('created_at', 'desc')->get();
+        return $this->query($filters)
+            ->orderByDesc('created_at')
+            // Messages have no updated_at and a burst of submissions can
+            // share a created_at second, so created_at alone is not a
+            // unique ordering — without a tiebreaker, rows sharing a
+            // timestamp can repeat or vanish across page boundaries.
+            ->orderByDesc('id')
+            ->paginate(
+                perPage: $filters['per_page'] ?? self::DEFAULT_PER_PAGE,
+                page: $filters['page'] ?? 1,
+            );
+    }
+
+    /**
+     * @param  array{status?: string, search?: string}  $filters
+     * @return Builder<Message>
+     */
+    private function query(array $filters): Builder
+    {
+        return Message::query()
+            ->when(
+                isset($filters['status']),
+                fn (Builder $query) => $query->where('status', $filters['status']),
+            )
+            ->when(
+                filled($filters['search'] ?? null),
+                fn (Builder $query) => $query->where(
+                    fn (Builder $group) => $this->applySearch($group, $filters['search']),
+                ),
+            );
+    }
+
+    /**
+     * Mirrors the fields the admin inbox used to search client-side.
+     * Compares lower-cased values rather than using ILIKE so the behaviour
+     * is identical on PostgreSQL (production) and sqlite (the test suite).
+     *
+     * @param  Builder<Message>  $query
+     */
+    private function applySearch(Builder $query, string $search): void
+    {
+        $term = '%'.mb_strtolower(trim($search)).'%';
+
+        foreach (['name', 'email', 'subject', 'message'] as $column) {
+            $query->orWhereRaw("lower({$column}) like ?", [$term]);
+        }
     }
 
     public function create(array $attributes): Message
