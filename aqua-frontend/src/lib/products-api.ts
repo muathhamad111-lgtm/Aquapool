@@ -38,6 +38,26 @@ export function useAdminProducts() {
   });
 }
 
+/**
+ * Fetches one product *with* its specifications, for the admin edit form —
+ * the admin list omits them so it isn't inflated with every product's spec
+ * tables just so one of them can be edited.
+ *
+ * Imperative rather than a `useQuery`, because it's driven by opening a
+ * dialog, not by rendering: a conditional query would need its result
+ * synced back into form state through an effect.
+ */
+export function useAdminProductFetcher() {
+  const qc = useQueryClient();
+
+  return (id: string) =>
+    qc.fetchQuery({
+      queryKey: [...ADMIN_QUERY_KEY, id],
+      queryFn: () => apiClient.get<DbProductDetail>(`/api/v1/admin/products/${id}`),
+      staleTime: 0,
+    });
+}
+
 function invalidateProductQueries(qc: ReturnType<typeof useQueryClient>) {
   qc.invalidateQueries({ queryKey: ADMIN_QUERY_KEY });
   qc.invalidateQueries({ queryKey: PUBLIC_QUERY_KEY });

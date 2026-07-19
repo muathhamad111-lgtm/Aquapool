@@ -11,6 +11,11 @@ class ProductPolicy
         return $actor->isStaff();
     }
 
+    public function view(User $actor): bool
+    {
+        return $actor->isStaff();
+    }
+
     public function create(User $actor): bool
     {
         return $actor->isStaff();

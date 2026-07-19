@@ -85,6 +85,20 @@ unpublished.
 
 - `200` → `{"data": [ProductResource, ...]}`
 
+## `GET /admin/products/{product}`
+
+Auth required (staff or admin). One product **with** its `specifications`,
+for the admin edit form. Addressed by **UUID**, not slug — unlike the public
+detail endpoint. Returns unpublished products too; editing one is the point.
+
+- `200` → `{"data": ProductDetailResource}`
+- `404` → unknown id
+- `401` / `403` → unauthenticated / not staff
+
+This exists so `GET /admin/products` can keep omitting `specifications`: an
+admin list would otherwise carry every product's full spec tables just so
+one of them can be opened for editing.
+
 ## `POST /admin/products`
 
 Auth required. Body:

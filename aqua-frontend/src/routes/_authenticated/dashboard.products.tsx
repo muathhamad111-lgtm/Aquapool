@@ -5,15 +5,18 @@ import { useEffect, useMemo, useState } from "react";
 import { Plus, Pencil, Trash2, Loader2, Eye, EyeOff, FolderTree } from "lucide-react";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api-client";
-import { type DbProduct, type DbProductCategory } from "@/lib/admin-api";
+import { type DbProduct, type DbProductCategory, type DbSpecificationGroup } from "@/lib/admin-api";
 import {
   useAdminProducts,
   useCreateProduct,
   useUpdateProduct,
   useDeleteProduct,
+  useAdminProductFetcher,
 } from "@/lib/products-api";
 import { useAdminProductCategories } from "@/lib/product-categories-api";
-import { ImageUpload, DEFAULT_PLACEHOLDER_IMAGE } from "@/components/admin/ImageUpload";
+import { DEFAULT_PLACEHOLDER_IMAGE } from "@/components/admin/ImageUpload";
+import { GalleryUpload } from "@/components/admin/GalleryUpload";
+import { SpecificationsEditor } from "@/components/admin/SpecificationsEditor";
 import { Pagination } from "@/components/admin/Pagination";
 import { CategoryCascader, categoryPath } from "@/components/admin/CategoryCascader";
 import { CategoryFilterCascader } from "@/components/CategoryFilterCascader";
@@ -32,11 +35,13 @@ export const Route = createFileRoute("/_authenticated/dashboard/products")({
   component: ProductsAdmin,
 });
 
-// `slug` and `images` are omitted deliberately: this form still edits a
-// single cover through image_url, and the API generates the slug and keeps
-// images[0] in sync with that cover. The gallery and specifications editors
-// land in the next change.
-type Form = Omit<DbProduct, "id" | "created_at" | "updated_at" | "slug" | "images">;
+// `slug` stays out: the API generates it from title_en and never
+// regenerates it on update, so a published URL can't change by accident.
+// `image_url` stays in the type but is no longer edited directly — it's
+// derived from images[0] on save.
+type Form = Omit<DbProduct, "id" | "created_at" | "updated_at" | "slug"> & {
+  specifications: DbSpecificationGroup[];
+};
 const empty: Form = {
   title_ar: "",
   title_en: "",
@@ -45,6 +50,8 @@ const empty: Form = {
   category: "general",
   category_id: null,
   image_url: "",
+  images: [],
+  specifications: [],
   price_label_ar: "",
   price_label_en: "",
   sort_order: 0,
@@ -79,6 +86,8 @@ function ProductsAdmin() {
     return s;
   }, [categories]);
 
+  const [loadingSpecs, setLoadingSpecs] = useState(false);
+  const fetchAdminProduct = useAdminProductFetcher();
   const createProduct = useCreateProduct();
   const updateProduct = useUpdateProduct();
   const deleteProduct = useDeleteProduct();
@@ -87,7 +96,14 @@ function ProductsAdmin() {
   const save = {
     isPending: createProduct.isPending || updateProduct.isPending,
     mutate: () => {
-      const payload = { ...form, image_url: form.image_url?.trim() || DEFAULT_PLACEHOLDER_IMAGE };
+      const payload = {
+        ...form,
+        // The API derives image_url from images[0]. A product with no
+        // images at all would leave the catalogue card with a broken
+        // <img>, so the placeholder takes the cover slot exactly as it did
+        // when this form managed a single image.
+        images: form.images.length > 0 ? form.images : [DEFAULT_PLACEHOLDER_IMAGE],
+      };
       if (editing) {
         updateProduct.mutate(
           { id: editing.id, ...payload },
@@ -125,14 +141,28 @@ function ProductsAdmin() {
     setForm({ ...empty, sort_order: (list.data?.length ?? 0) + 1 });
     setOpen(true);
   }
-  function openEdit(p: DbProduct) {
+  async function openEdit(p: DbProduct) {
     setEditing(p);
-    const { id: _i, created_at: _c, updated_at: _u, ...rest } = p;
+    const { id: _i, created_at: _c, updated_at: _u, slug: _s, ...rest } = p;
     void _i;
     void _c;
     void _u;
-    setForm(rest);
+    void _s;
+    // Open immediately with what the list already has, so the dialog never
+    // blocks on a request; specifications are the only field the list
+    // omits, and they fill in a moment later.
+    setForm({ ...rest, specifications: [] });
     setOpen(true);
+
+    setLoadingSpecs(true);
+    try {
+      const full = await fetchAdminProduct(p.id);
+      setForm((current) => ({ ...current, specifications: full.specifications ?? [] }));
+    } catch (e) {
+      mutationError(e);
+    } finally {
+      setLoadingSpecs(false);
+    }
   }
 
   const descendantsOf = useMemo(() => {
@@ -308,9 +338,9 @@ function ProductsAdmin() {
             }}
             className="space-y-4"
           >
-            <ImageUpload
-              value={form.image_url}
-              onChange={(url) => setForm({ ...form, image_url: url })}
+            <GalleryUpload
+              value={form.images}
+              onChange={(images) => setForm({ ...form, images })}
               folder="products"
               recommended="1000 × 1000 بكسل (مربّعة 1:1)"
             />
@@ -398,6 +428,20 @@ function ProductsAdmin() {
                 {form.is_published ? "منشور" : "مخفي"}
               </button>
             </div>
+
+            <div className="border-t border-border pt-4">
+              {loadingSpecs ? (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground py-4">
+                  <Loader2 className="size-4 animate-spin" /> جاري تحميل المواصفات…
+                </div>
+              ) : (
+                <SpecificationsEditor
+                  value={form.specifications}
+                  onChange={(specifications) => setForm({ ...form, specifications })}
+                />
+              )}
+            </div>
+
             <DialogFooter>
               <button
                 type="button"

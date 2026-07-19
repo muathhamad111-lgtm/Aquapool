@@ -38,6 +38,18 @@ class ProductController extends ApiController
         return $this->success(ProductResource::collection($this->products->all()));
     }
 
+    /**
+     * One product with its specifications, for the admin edit form. Kept
+     * separate from index() so the admin list isn't inflated with every
+     * product's spec tables just so one of them can be edited.
+     */
+    public function show(Product $product): JsonResponse
+    {
+        $this->authorize('view', Product::class);
+
+        return $this->success(new ProductDetailResource($product));
+    }
+
     public function store(StoreProductRequest $request): JsonResponse
     {
         $this->authorize('create', Product::class);
