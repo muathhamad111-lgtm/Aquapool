@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\AuditAction;
+use App\Enums\MessageStatus;
 use App\Models\Message;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -18,7 +19,7 @@ class MessageService
 
     public function create(array $attributes): Message
     {
-        return Message::create([...$attributes, 'status' => 'new']);
+        return Message::create([...$attributes, 'status' => MessageStatus::New->value]);
     }
 
     public function updateStatus(Message $message, string $status): Message
@@ -68,19 +69,30 @@ class MessageService
      */
     public function summary(): array
     {
+        $byStatus = $this->statusCounts();
+
+        return [
+            'total' => array_sum($byStatus),
+            'by_status' => $byStatus,
+            'recent' => Message::orderBy('created_at', 'desc')->limit(5)->get(),
+        ];
+    }
+
+    /**
+     * Row count per status across the whole table. Every status in the enum
+     * is always present, zero included — a client rendering one chip per
+     * status must not have to guess whether a missing key means zero.
+     *
+     * @return array<string, int>
+     */
+    public function statusCounts(): array
+    {
         $counts = Message::selectRaw('status, count(*) as count')
             ->groupBy('status')
             ->pluck('count', 'status');
 
-        return [
-            'total' => (int) $counts->sum(),
-            'by_status' => [
-                'new' => (int) ($counts['new'] ?? 0),
-                'in_progress' => (int) ($counts['in_progress'] ?? 0),
-                'replied' => (int) ($counts['replied'] ?? 0),
-                'archived' => (int) ($counts['archived'] ?? 0),
-            ],
-            'recent' => Message::orderBy('created_at', 'desc')->limit(5)->get(),
-        ];
+        return collect(MessageStatus::values())
+            ->mapWithKeys(fn (string $status) => [$status => (int) ($counts[$status] ?? 0)])
+            ->all();
     }
 }
