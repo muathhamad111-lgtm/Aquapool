@@ -45,3 +45,50 @@ Deployment and operational scripts.
 
   Note: the `staging` profile defaults to `PORT=3001` for its health check —
   adjust it in the script if staging listens on a different port.
+
+- `deploy-api.sh` — the same releases + atomic symlink swap + health check +
+  auto-rollback pattern, for the `aqua-app` Laravel API behind Nginx +
+  PHP-FPM. Deployed to `/root/scripts/` on the server.
+
+  **Not yet run against the server.** Verify `FPM_SERVICE`, `LIVE_LINK` and
+  `HEALTH_URL` in the profile block before the first deploy — the script
+  refuses to run if the systemd unit or `pg_dump` is missing rather than
+  guessing, but it cannot tell whether `/var/www/aqua-api` is really where
+  Nginx points.
+
+  ```bash
+  # 1. From your machine, upload the fresh source (no vendor/.env/storage):
+  rsync -az --delete \
+    --exclude vendor --exclude .env --exclude storage --exclude node_modules \
+    aqua-app/  root@SERVER:/var/www/aqua-api-incoming/
+
+  # 2. On the server:
+  /root/scripts/deploy-api.sh production /var/www/aqua-api-incoming
+  ```
+
+  Rollback (code only — see below):
+
+  ```bash
+  /root/scripts/deploy-api.sh production --rollback            # list releases
+  /root/scripts/deploy-api.sh production --rollback 20260719-140233
+  ```
+
+  Three things differ from the frontend script, all Laravel-specific:
+
+  - **`storage/` is shared**, living once under `<live>-shared/storage` and
+    symlinked into each release. Uploaded images (`ImageUploadService` writes
+    to the `public` disk) live there — a per-release `storage/` would make
+    every deploy silently lose every upload.
+  - **Migrations run before the symlink swap**, immediately after a `pg_dump`
+    taken in the same run under `/var/backups/aqua_app/pre-deploy/`. The new
+    code therefore never meets the old schema.
+  - **PHP-FPM is reloaded after the swap.** Nginx resolves the symlink per
+    request, but opcache caches compiled files by resolved path, so without
+    the reload the old release keeps being executed.
+
+  `--rollback` repoints the code symlink **only** — it never runs
+  `migrate:rollback`, which would destroy data on a release that has already
+  taken writes. Write migrations so the previous release can still run
+  against the new schema (add columns; don't rename or drop in the same
+  deploy). If a rollback genuinely needs the old schema, restore that run's
+  pre-deploy dump by hand.

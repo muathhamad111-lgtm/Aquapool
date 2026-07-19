@@ -1,6 +1,6 @@
 # Aqua — Architecture
 
-Last updated: 2026-07-14. This document is the source of truth for the
+Last updated: 2026-07-19. This document is the source of truth for the
 project's architecture. The Git repository is authoritative.
 
 > **Status: migration complete.** The project began as a Lovable-generated app
@@ -19,7 +19,7 @@ aquapool/
   aqua-app/        Laravel 12 + PostgreSQL REST API. All business logic.
                    Live at aqua-api.moathhamad.space.
   docs/            Architecture and API documentation (this file)
-  scripts/         Operational scripts (DB backup, frontend deploy)
+  scripts/         Operational scripts (DB backup, frontend + API deploy)
   docker/          Container definitions (reserved for a later phase)
   README.md
 ```
@@ -38,6 +38,10 @@ aquapool/
 - Deploy: self-hosted on a DigitalOcean droplet (Nginx + systemd, node-server
   Nitro build). See `scripts/deploy-frontend.sh` (releases + atomic symlink
   swap, health check, auto-rollback).
+- Lovable is gone: the `@lovable.dev/vite-tanstack-config` dependency and the
+  Lovable build integration were removed, and the Vite config is standard and
+  self-contained. `src/lib/lovable-error-reporting.ts` remains as the error
+  boundary's reporter — it is plain local code with no Lovable dependency.
 
 ## Current stack (aqua-app)
 
@@ -48,6 +52,12 @@ aquapool/
   Policies, Migrations, Seeders, Feature Tests
 - Nightly `pg_dump` backup via `scripts/backup-aqua-app-db.sh` (cron 03:15,
   keeps 7 days)
+- Deploy: `scripts/deploy-api.sh` (releases + atomic symlink swap, shared
+  `storage/`, pre-migration dump, PHP-FPM reload, health check,
+  auto-rollback of the code). Not yet exercised against the server — verify
+  its profile block before the first run.
+- Unbounded, append-only reads (`/admin/audit-logs`, `/admin/messages`) are
+  paginated and filtered in SQL; see `docs/api-foundation.md`
 
 All data access goes through the Laravel REST API. React must never contain
 business logic.

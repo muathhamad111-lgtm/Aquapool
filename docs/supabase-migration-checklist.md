@@ -1,5 +1,24 @@
 # Supabase Migration Master Checklist
 
+> **Superseded — historical record.** Last verified 2026-07-19: the two
+> items this document still listed as outstanding are both closed, and
+> §13's "Lovable is intentionally kept" no longer describes the repo.
+> See "Closed since this inventory" immediately below; the rest of the
+> document is kept as the record of how the migration was executed.
+> `docs/architecture.md` is the current source of truth.
+
+## Closed since this inventory
+
+- **§9 environment variables** — `aqua-frontend/.env` now contains only
+  `VITE_API_URL`. Every Supabase variable is gone, and an `.env.example`
+  documents the one that remains.
+- **§13 Lovable-specific files** — the `@lovable.dev/vite-tanstack-config`
+  dependency and the Lovable build integration were removed, and the Vite
+  config is standard and self-contained. `src/lib/lovable-error-reporting.ts`
+  survives as the error boundary's reporter, but it is plain local code
+  (it calls `window.__lovableEvents` if something injected it, and no-ops
+  otherwise) with no Lovable dependency of its own.
+
 Last updated: 2026-07-04. This is a point-in-time inventory of every
 remaining Supabase / Lovable Cloud dependency in the project, produced
 before starting any further migration work beyond Phase 3 (Site Settings).

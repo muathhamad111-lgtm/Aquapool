@@ -5,8 +5,12 @@ Monorepo for the Aqua Pool Group platform.
 - **`aqua-frontend/`** — React + TypeScript frontend (TanStack Start/Router/Query, shadcn/ui). Currently deployed at `aqua.moathhamad.space`.
 - **`aqua-app/`** — Laravel 12 + PostgreSQL REST API. All business logic, validation, permissions, and data access live here.
 - **`docs/`** — architecture and migration documentation. Start with [`docs/architecture.md`](docs/architecture.md).
-- **`scripts/`** — deployment/dev scripts (reserved for a later phase).
+- **`scripts/`** — operational scripts: nightly DB backup, and near-zero-downtime
+  deploys for the frontend and the API.
 - **`docker/`** — container definitions (reserved for a later phase).
+
+CI (`.github/workflows/ci.yml`) runs the Laravel suite plus the frontend's
+lint/typecheck/build on every push to `main` and every pull request.
 
 ## Status
 
