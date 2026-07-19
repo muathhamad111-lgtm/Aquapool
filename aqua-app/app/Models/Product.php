@@ -15,6 +15,7 @@ class Product extends Model
     use Auditable, HasFactory, HasUuids;
 
     protected $fillable = [
+        'slug',
         'title_ar',
         'title_en',
         'caption_ar',
@@ -26,12 +27,19 @@ class Product extends Model
         'category_id',
         'sort_order',
         'is_published',
+        'images',
+        'specifications',
     ];
 
     protected function casts(): array
     {
         return [
             'is_published' => 'boolean',
+            'images' => 'array',
+            // Named `specifications`, not `attributes`: a column called
+            // `attributes` would shadow Eloquent's own $attributes property
+            // inside the model and its traits.
+            'specifications' => 'array',
         ];
     }
 

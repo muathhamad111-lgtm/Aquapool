@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Requests\V1\Products\StoreProductRequest;
 use App\Http\Requests\V1\Products\UpdateProductRequest;
+use App\Http\Resources\V1\ProductDetailResource;
 use App\Http\Resources\V1\ProductResource;
 use App\Models\Product;
 use App\Services\ProductService;
@@ -16,6 +17,18 @@ class ProductController extends ApiController
     public function publicIndex(): JsonResponse
     {
         return $this->success(ProductResource::collection($this->products->publicList()));
+    }
+
+    /**
+     * Public — no auth. Unpublished products 404 here rather than 403, so a
+     * visitor can't distinguish a hidden product from one that never
+     * existed.
+     */
+    public function publicShow(string $slug): JsonResponse
+    {
+        return $this->success(
+            new ProductDetailResource($this->products->publicFindBySlug($slug))
+        );
     }
 
     public function index(): JsonResponse

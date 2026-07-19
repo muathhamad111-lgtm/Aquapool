@@ -18,12 +18,19 @@ class ProductFactory extends Factory
     public function definition(): array
     {
         return [
+            // Unique per row: `slug` carries a unique index, so a shared
+            // fixed value would make any test creating two products fail.
+            'slug' => fake()->unique()->slug(),
             'title_ar' => fake()->words(3, true),
             'title_en' => fake()->words(3, true),
             'caption_ar' => fake()->sentence(),
             'caption_en' => fake()->sentence(),
             'category' => 'general',
             'image_url' => '/site/placeholder.jpg',
+            // Mirrors the cover/gallery invariant ProductService enforces:
+            // images[0] is always image_url.
+            'images' => ['/site/placeholder.jpg'],
+            'specifications' => [],
             'price_label_ar' => fake()->words(2, true),
             'price_label_en' => fake()->words(2, true),
             'sort_order' => fake()->numberBetween(1, 20),

@@ -36,6 +36,11 @@ Route::prefix('v1')->group(function () {
     // Public — no auth. Always filtered to published products only.
     Route::get('/products', [ProductController::class, 'publicIndex']);
 
+    // Public — no auth. Addressed by slug, not UUID; an unpublished
+    // product 404s here. Declared after /products so it can never shadow
+    // the list route.
+    Route::get('/products/{slug}', [ProductController::class, 'publicShow']);
+
     // Public — no auth. Always filtered to published projects only.
     Route::get('/projects', [ProjectController::class, 'publicIndex']);
 
