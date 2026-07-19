@@ -26,7 +26,14 @@ return new class extends Migration
 
         // Defense in depth: only 'admin' or 'user' can ever be stored, even
         // if application-level validation is ever bypassed.
-        DB::statement("ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('admin', 'user'))");
+        //
+        // PostgreSQL only. sqlite (the test suite) has no ALTER TABLE ADD
+        // CONSTRAINT — some builds reject it outright, others parse it
+        // without applying anything, so the guard is about portability, not
+        // about giving sqlite a weaker schema.
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement("ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('admin', 'user'))");
+        }
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();

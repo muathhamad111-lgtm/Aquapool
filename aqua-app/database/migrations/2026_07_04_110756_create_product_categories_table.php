@@ -45,7 +45,12 @@ return new class extends Migration
         // simple CHECK, not the cross-row kind-inheritance rule (that one
         // lives in ProductCategoryService, since a DB CHECK can't compare
         // against a different row).
-        DB::statement("ALTER TABLE product_categories ADD CONSTRAINT product_categories_kind_check CHECK (kind IN ('product', 'service', 'project'))");
+        //
+        // PostgreSQL only — sqlite (the test suite) has no ALTER TABLE ADD
+        // CONSTRAINT. See the same guard in the users migration.
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement("ALTER TABLE product_categories ADD CONSTRAINT product_categories_kind_check CHECK (kind IN ('product', 'service', 'project'))");
+        }
     }
 
     /**
