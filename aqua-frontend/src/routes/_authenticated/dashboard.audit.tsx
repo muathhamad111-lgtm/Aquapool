@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Loader2,
   Search,
@@ -13,8 +12,9 @@ import {
   User as UserIcon,
   ArrowUpDown,
 } from "lucide-react";
-import { apiClient } from "@/lib/api-client";
-import type { DbAuditLog } from "@/lib/admin-api";
+import { entityCountsFrom, useAuditLogs } from "@/lib/audit-logs-api";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { Pagination } from "@/components/admin/Pagination";
 import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/_authenticated/dashboard/audit")({
@@ -79,33 +79,26 @@ function relative(iso: string) {
 function AuditPage() {
   const [entity, setEntity] = useState<string>("all");
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(24);
 
-  const { data, isLoading, refetch, isFetching } = useQuery({
-    queryKey: ["admin", "audit"],
-    queryFn: () => apiClient.get<DbAuditLog[]>("/api/v1/admin/audit-logs"),
+  const debouncedSearch = useDebouncedValue(search);
+
+  // Any change to what's being queried invalidates the current page number
+  // — page 5 of an unfiltered log is rarely page 5 of a filtered one, and
+  // is often past the end of it.
+  useEffect(() => setPage(1), [entity, debouncedSearch, pageSize]);
+
+  const { data, isLoading, refetch, isFetching } = useAuditLogs({
+    page,
+    perPage: pageSize,
+    entityType: entity,
+    search: debouncedSearch,
   });
 
-  const filtered = useMemo(() => {
-    let rows = data ?? [];
-    if (entity !== "all") rows = rows.filter((r) => r.entity_type === entity);
-    if (search.trim()) {
-      const q = search.trim().toLowerCase();
-      rows = rows.filter(
-        (r) =>
-          r.user_email?.toLowerCase().includes(q) ||
-          r.entity_label?.toLowerCase().includes(q) ||
-          r.action.toLowerCase().includes(q) ||
-          r.entity_type.toLowerCase().includes(q),
-      );
-    }
-    return rows;
-  }, [data, entity, search]);
-
-  const counts = useMemo(() => {
-    const c: Record<string, number> = { all: data?.length ?? 0 };
-    for (const row of data ?? []) c[row.entity_type] = (c[row.entity_type] ?? 0) + 1;
-    return c;
-  }, [data]);
+  const rows = data?.data ?? [];
+  const total = data?.meta.total ?? 0;
+  const counts = useMemo(() => entityCountsFrom(data?.meta), [data]);
 
   return (
     <div className="p-4 md:p-6 space-y-6">
@@ -178,11 +171,11 @@ function AuditPage() {
           <div className="p-16 grid place-items-center">
             <Loader2 className="size-6 animate-spin text-teal" />
           </div>
-        ) : filtered.length === 0 ? (
+        ) : rows.length === 0 ? (
           <div className="p-16 text-center text-muted-foreground text-sm">لا توجد سجلات مطابقة</div>
         ) : (
           <ul className="divide-y divide-border">
-            {filtered.map((row) => {
+            {rows.map((row) => {
               const meta = ACTION_META[row.action] ?? {
                 label: row.action,
                 color: "bg-muted text-muted-foreground",
@@ -245,6 +238,16 @@ function AuditPage() {
           </ul>
         )}
       </div>
+
+      {total > 0 && (
+        <Pagination
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+        />
+      )}
     </div>
   );
 }

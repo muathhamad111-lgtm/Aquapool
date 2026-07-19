@@ -28,7 +28,23 @@ export function hasToken(): boolean {
   return getToken() !== null;
 }
 
-async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
+/** A `{ data, meta }` list response from a paginated admin endpoint. */
+export type Paginated<T> = {
+  data: T[];
+  meta: {
+    current_page: number;
+    per_page: number;
+    total: number;
+    last_page: number;
+  } & Record<string, unknown>;
+};
+
+/**
+ * @param unwrap Return `body.data` — the norm, since every endpoint wraps
+ *   its payload. Paginated endpoints pass `false`: their paging state lives
+ *   in a sibling `meta` key that unwrapping would silently discard.
+ */
+async function apiFetch<T>(path: string, options: RequestInit = {}, unwrap = true): Promise<T> {
   const token = getToken();
   const headers = new Headers(options.headers);
   headers.set("Accept", "application/json");
@@ -48,11 +64,13 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
     throw new ApiError(body.message ?? "Request failed", response.status, body.errors);
   }
 
-  return (body.data ?? body) as T;
+  return (unwrap ? (body.data ?? body) : body) as T;
 }
 
 export const apiClient = {
   get: <T>(path: string) => apiFetch<T>(path, { method: "GET" }),
+  /** GET a paginated endpoint, keeping the `meta` envelope intact. */
+  getPage: <T>(path: string) => apiFetch<Paginated<T>>(path, { method: "GET" }, false),
   post: <T>(path: string, data?: unknown) =>
     apiFetch<T>(path, { method: "POST", body: data ? JSON.stringify(data) : undefined }),
   patch: <T>(path: string, data?: unknown) =>

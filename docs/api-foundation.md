@@ -25,6 +25,34 @@ a single resource in `{"data": ...}` by Laravel convention — the trait's
 `success()` exists for everything that isn't a Resource (health checks,
 delete confirmations, simple action results).
 
+## Paginated list responses
+
+Endpoints backed by an unbounded, append-only table (audit logs, messages)
+return `paginated(...)` from the same trait instead of `success(...)`:
+
+```json
+{
+  "data": [ ...resources ],
+  "meta": { "current_page": 1, "per_page": 25, "total": 1840, "last_page": 74 }
+}
+```
+
+`data` stays a **flat array of resources** — byte-identical to what an
+unpaginated list returns — and the paging state goes in a sibling `meta`
+key. This is deliberately *not* Laravel's default paginator serialization,
+which nests the rows under `data.data`: keeping `data` flat means a client
+that only reads `data` needs no change when an endpoint becomes paginated.
+
+`paginated()` takes an optional third argument for module-specific meta
+merged into the same `meta` object (e.g. audit logs' `entity_counts`, which
+back the filter chips). On the frontend, `apiClient.getPage()` is the
+counterpart — the ordinary `get()` unwraps to `body.data` and would throw
+`meta` away.
+
+Always paginate at the query level (`->paginate()`), never by fetching
+everything and slicing. A hardcoded `limit(N)` is not pagination: it
+truncates silently, with nothing telling the client that older rows exist.
+
 ## Base controller
 
 `App\Http\Controllers\Api\V1\ApiController` is an abstract class extending
