@@ -80,16 +80,36 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Aqua Pool Group | تشطيب المسابح وإكسسواراتها" },
-      { name: "description", content: "Leaders in luxury pool finishing, accessories, and maintenance across the Middle East." },
+      {
+        name: "description",
+        content:
+          "Leaders in luxury pool finishing, accessories, and maintenance across the Middle East.",
+      },
       { name: "author", content: "Aqua Pool Group" },
       { property: "og:title", content: "Aqua Pool Group | تشطيب المسابح وإكسسواراتها" },
-      { property: "og:description", content: "Leaders in luxury pool finishing, accessories, and maintenance across the Middle East." },
+      {
+        property: "og:description",
+        content:
+          "Leaders in luxury pool finishing, accessories, and maintenance across the Middle East.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:title", content: "Aqua Pool Group | تشطيب المسابح وإكسسواراتها" },
-      { name: "twitter:description", content: "Leaders in luxury pool finishing, accessories, and maintenance across the Middle East." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b60b1683-ced5-4cc1-b7b2-92cb47e1a72a/id-preview-587ed06f--68f06f69-2f20-4706-b53b-6dea80081ba7.lovable.app-1782674962092.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b60b1683-ced5-4cc1-b7b2-92cb47e1a72a/id-preview-587ed06f--68f06f69-2f20-4706-b53b-6dea80081ba7.lovable.app-1782674962092.png" },
+      {
+        name: "twitter:description",
+        content:
+          "Leaders in luxury pool finishing, accessories, and maintenance across the Middle East.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b60b1683-ced5-4cc1-b7b2-92cb47e1a72a/id-preview-587ed06f--68f06f69-2f20-4706-b53b-6dea80081ba7.lovable.app-1782674962092.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b60b1683-ced5-4cc1-b7b2-92cb47e1a72a/id-preview-587ed06f--68f06f69-2f20-4706-b53b-6dea80081ba7.lovable.app-1782674962092.png",
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

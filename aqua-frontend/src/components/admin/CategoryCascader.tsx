@@ -70,7 +70,8 @@ export function CategoryCascader({ categories, value, onChange, required }: Prop
   if (rootOptions.length === 0) {
     return (
       <div className="text-xs text-muted-foreground bg-muted/50 border border-dashed border-border rounded-xl px-3 py-3">
-        لا توجد تصنيفات بعد — يمكنك إضافتها من صفحة <span className="font-bold text-deep">تصنيفات المنتجات</span> ثم العودة.
+        لا توجد تصنيفات بعد — يمكنك إضافتها من صفحة{" "}
+        <span className="font-bold text-deep">تصنيفات المنتجات</span> ثم العودة.
       </div>
     );
   }

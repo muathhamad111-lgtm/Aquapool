@@ -46,9 +46,13 @@ function StatCard({
       to={href}
       className="group relative overflow-hidden bg-white border border-border rounded-2xl p-5 hover:border-teal/50 hover:shadow-lg hover:shadow-teal/5 transition-all flex flex-col justify-between min-h-[150px]"
     >
-      <div className={`absolute -top-10 -start-10 size-32 rounded-full bg-gradient-to-br ${tones[tone]} opacity-60 blur-2xl group-hover:opacity-90 transition-opacity`} />
+      <div
+        className={`absolute -top-10 -start-10 size-32 rounded-full bg-gradient-to-br ${tones[tone]} opacity-60 blur-2xl group-hover:opacity-90 transition-opacity`}
+      />
       <div className="relative flex items-center justify-between">
-        <span className={`size-11 rounded-xl bg-gradient-to-br ${tones[tone]} grid place-items-center`}>
+        <span
+          className={`size-11 rounded-xl bg-gradient-to-br ${tones[tone]} grid place-items-center`}
+        >
           <Icon className="size-5" />
         </span>
         <ArrowUpRight className="size-4 text-muted-foreground group-hover:text-teal group-hover:-rotate-45 transition-all" />
@@ -101,8 +105,8 @@ function DashboardOverview() {
               تحكّم كامل بمحتوى موقع Aqua Pool Group
             </h2>
             <p className="text-white/75 text-sm mt-2 leading-relaxed">
-              أدِر الخدمات، المشاريع، المنتجات، والرسائل الواردة من مكان واحد — بدعم كامل
-              للعربية والإنجليزية.
+              أدِر الخدمات، المشاريع، المنتجات، والرسائل الواردة من مكان واحد — بدعم كامل للعربية
+              والإنجليزية.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -128,9 +132,27 @@ function DashboardOverview() {
 
       {/* Stats */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="الخدمات" value={services.data?.length ?? "—"} icon={Wrench} href="/dashboard/services" tone="ocean" />
-        <StatCard title="المشاريع" value={projects.data?.length ?? "—"} icon={ImageIcon} href="/dashboard/projects" tone="teal" />
-        <StatCard title="المنتجات" value={products.data?.length ?? "—"} icon={Package} href="/dashboard/products" tone="mint" />
+        <StatCard
+          title="الخدمات"
+          value={services.data?.length ?? "—"}
+          icon={Wrench}
+          href="/dashboard/services"
+          tone="ocean"
+        />
+        <StatCard
+          title="المشاريع"
+          value={projects.data?.length ?? "—"}
+          icon={ImageIcon}
+          href="/dashboard/projects"
+          tone="teal"
+        />
+        <StatCard
+          title="المنتجات"
+          value={products.data?.length ?? "—"}
+          icon={Package}
+          href="/dashboard/products"
+          tone="mint"
+        />
         <StatCard
           title="الرسائل الواردة"
           value={messagesSummary.data?.total ?? "—"}
@@ -193,7 +215,10 @@ function DashboardOverview() {
                       {m.subject || m.email}
                     </div>
                   </div>
-                  <time className="text-[11px] text-muted-foreground shrink-0 tabular-nums" dir="ltr">
+                  <time
+                    className="text-[11px] text-muted-foreground shrink-0 tabular-nums"
+                    dir="ltr"
+                  >
                     {new Date(m.created_at).toLocaleDateString("ar-EG-u-nu-latn", {
                       day: "2-digit",
                       month: "short",

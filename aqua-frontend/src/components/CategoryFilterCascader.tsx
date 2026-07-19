@@ -103,7 +103,6 @@ export function CategoryFilterCascader({
     );
   }
 
-
   return (
     <div className="flex flex-wrap gap-2">
       {levels.map((lvl, idx) => (

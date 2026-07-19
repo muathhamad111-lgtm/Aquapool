@@ -22,9 +22,13 @@ export function SectionHeader({
           <span className="h-px flex-1 bg-border" />
         </div>
       )}
-      <h2 className="text-2xl sm:text-3xl md:text-5xl font-extrabold text-deep leading-[1.15] md:leading-[1.1]">{title}</h2>
+      <h2 className="text-2xl sm:text-3xl md:text-5xl font-extrabold text-deep leading-[1.15] md:leading-[1.1]">
+        {title}
+      </h2>
       {subtitle && (
-        <p className={`mt-4 md:mt-5 text-sm sm:text-base md:text-lg text-foreground/65 leading-relaxed ${center ? "max-w-2xl mx-auto" : "max-w-2xl"}`}>
+        <p
+          className={`mt-4 md:mt-5 text-sm sm:text-base md:text-lg text-foreground/65 leading-relaxed ${center ? "max-w-2xl mx-auto" : "max-w-2xl"}`}
+        >
           {subtitle}
         </p>
       )}
@@ -77,7 +81,9 @@ export function PageHero({
           {title}
         </h1>
         {subtitle && (
-          <p className="mt-5 md:mt-6 text-base md:text-lg text-white/65 max-w-2xl leading-relaxed">{subtitle}</p>
+          <p className="mt-5 md:mt-6 text-base md:text-lg text-white/65 max-w-2xl leading-relaxed">
+            {subtitle}
+          </p>
         )}
         {children}
       </div>

@@ -1,8 +1,18 @@
 import { useEffect, useRef } from "react";
 import {
-  Bold, Italic, Underline,
-  AlignLeft, AlignCenter, AlignRight, AlignJustify,
-  Heading1, Heading2, Type, List, ListOrdered, Eraser,
+  Bold,
+  Italic,
+  Underline,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  AlignJustify,
+  Heading1,
+  Heading2,
+  Type,
+  List,
+  ListOrdered,
+  Eraser,
 } from "lucide-react";
 
 type Props = {
@@ -38,9 +48,7 @@ export function RichTextArea({ label, value, onChange, dir, minHeight = 140 }: P
 
   return (
     <div>
-      {label && (
-        <label className="block text-xs font-bold text-deep/80 mb-1.5">{label}</label>
-      )}
+      {label && <label className="block text-xs font-bold text-deep/80 mb-1.5">{label}</label>}
       <div className="border border-border rounded-xl bg-white overflow-hidden focus-within:border-teal focus-within:ring-2 focus-within:ring-teal/20">
         <div
           dir="ltr"
@@ -59,7 +67,9 @@ export function RichTextArea({ label, value, onChange, dir, minHeight = 140 }: P
             className="h-8 text-xs rounded-md border border-border bg-white px-2 outline-none cursor-pointer"
             title="نمط الفقرة"
           >
-            <option value="style" disabled>نمط</option>
+            <option value="style" disabled>
+              نمط
+            </option>
             <option value="p">فقرة</option>
             <option value="h1">عنوان كبير</option>
             <option value="h2">عنوان متوسط</option>
@@ -75,7 +85,9 @@ export function RichTextArea({ label, value, onChange, dir, minHeight = 140 }: P
             className="h-8 text-xs rounded-md border border-border bg-white px-2 outline-none cursor-pointer"
             title="حجم الخط"
           >
-            <option value="size" disabled>الحجم</option>
+            <option value="size" disabled>
+              الحجم
+            </option>
             <option value="2">صغير جداً</option>
             <option value="3">صغير</option>
             <option value="4">عادي</option>
@@ -86,27 +98,68 @@ export function RichTextArea({ label, value, onChange, dir, minHeight = 140 }: P
 
           <div className="w-px h-5 bg-border mx-1" />
 
-          <button type="button" className={btn} onClick={() => exec("bold")} title="عريض"><Bold className="size-4" /></button>
-          <button type="button" className={btn} onClick={() => exec("italic")} title="مائل"><Italic className="size-4" /></button>
-          <button type="button" className={btn} onClick={() => exec("underline")} title="تحته خط"><Underline className="size-4" /></button>
+          <button type="button" className={btn} onClick={() => exec("bold")} title="عريض">
+            <Bold className="size-4" />
+          </button>
+          <button type="button" className={btn} onClick={() => exec("italic")} title="مائل">
+            <Italic className="size-4" />
+          </button>
+          <button type="button" className={btn} onClick={() => exec("underline")} title="تحته خط">
+            <Underline className="size-4" />
+          </button>
 
           <div className="w-px h-5 bg-border mx-1" />
 
-          <button type="button" className={btn} onClick={() => exec("justifyRight")} title="محاذاة لليمين"><AlignRight className="size-4" /></button>
-          <button type="button" className={btn} onClick={() => exec("justifyCenter")} title="توسيط"><AlignCenter className="size-4" /></button>
-          <button type="button" className={btn} onClick={() => exec("justifyLeft")} title="محاذاة لليسار"><AlignLeft className="size-4" /></button>
-          <button type="button" className={btn} onClick={() => exec("justifyFull")} title="ضبط"><AlignJustify className="size-4" /></button>
+          <button
+            type="button"
+            className={btn}
+            onClick={() => exec("justifyRight")}
+            title="محاذاة لليمين"
+          >
+            <AlignRight className="size-4" />
+          </button>
+          <button type="button" className={btn} onClick={() => exec("justifyCenter")} title="توسيط">
+            <AlignCenter className="size-4" />
+          </button>
+          <button
+            type="button"
+            className={btn}
+            onClick={() => exec("justifyLeft")}
+            title="محاذاة لليسار"
+          >
+            <AlignLeft className="size-4" />
+          </button>
+          <button type="button" className={btn} onClick={() => exec("justifyFull")} title="ضبط">
+            <AlignJustify className="size-4" />
+          </button>
 
           <div className="w-px h-5 bg-border mx-1" />
 
-          <button type="button" className={btn} onClick={() => exec("insertUnorderedList")} title="قائمة نقطية"><List className="size-4" /></button>
-          <button type="button" className={btn} onClick={() => exec("insertOrderedList")} title="قائمة مرقمة"><ListOrdered className="size-4" /></button>
+          <button
+            type="button"
+            className={btn}
+            onClick={() => exec("insertUnorderedList")}
+            title="قائمة نقطية"
+          >
+            <List className="size-4" />
+          </button>
+          <button
+            type="button"
+            className={btn}
+            onClick={() => exec("insertOrderedList")}
+            title="قائمة مرقمة"
+          >
+            <ListOrdered className="size-4" />
+          </button>
 
           <div className="flex-1" />
           <button
             type="button"
             className={btn}
-            onClick={() => { exec("removeFormat"); exec("formatBlock", "P"); }}
+            onClick={() => {
+              exec("removeFormat");
+              exec("formatBlock", "P");
+            }}
             title="إزالة التنسيق"
           >
             <Eraser className="size-4" />

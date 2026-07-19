@@ -57,7 +57,11 @@ export function AdminSidebar({ onSignOut, email }: Props) {
 
   const renderGroup = (label: string, items: NavItem[]) => (
     <SidebarGroup>
-      {!collapsed && <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground/70 font-bold px-3">{label}</SidebarGroupLabel>}
+      {!collapsed && (
+        <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground/70 font-bold px-3">
+          {label}
+        </SidebarGroupLabel>
+      )}
       <SidebarGroupContent>
         <SidebarMenu>
           {items.map((item) => {
@@ -127,7 +131,10 @@ export function AdminSidebar({ onSignOut, email }: Props) {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={onSignOut} className="text-destructive hover:bg-destructive/10">
+            <SidebarMenuButton
+              onClick={onSignOut}
+              className="text-destructive hover:bg-destructive/10"
+            >
               <LogOut className="h-4 w-4" />
               <span>تسجيل الخروج</span>
             </SidebarMenuButton>

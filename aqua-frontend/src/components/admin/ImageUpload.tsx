@@ -72,9 +72,19 @@ export function ImageUpload({
         </div>
         <div className="flex-1 min-w-0">
           <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-white hover:bg-muted text-sm font-semibold cursor-pointer transition-colors">
-            {uploading ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
+            {uploading ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Upload className="size-4" />
+            )}
             {uploading ? "جاري الرفع..." : value ? "استبدال الصورة" : "رفع صورة"}
-            <input type="file" accept="image/*" onChange={onFile} className="hidden" disabled={uploading} />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={onFile}
+              className="hidden"
+              disabled={uploading}
+            />
           </label>
           {error && <p className="text-xs text-destructive mt-2">{error}</p>}
           <div className="mt-2 space-y-0.5">
