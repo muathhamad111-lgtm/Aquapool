@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A new push to the same branch makes the previous run's result irrelevant.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    name: aqua-app (Laravel)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: aqua-app
+
+    # The suite runs against sqlite :memory: (see phpunit.xml), so no
+    # service container is needed. Production is PostgreSQL — if a test
+    # ever depends on a Postgres-only behaviour, add a service here rather
+    # than weakening the test.
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: mbstring, pdo_sqlite, sqlite3, bcmath, intl
+          coverage: none
+
+      - name: Cache composer packages
+        uses: actions/cache@v4
+        with:
+          path: aqua-app/vendor
+          key: composer-${{ runner.os }}-${{ hashFiles('aqua-app/composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Check formatting (Pint)
+        run: ./vendor/bin/pint --test
+
+      - name: Run tests
+        run: php artisan test
+
+  frontend:
+    name: aqua-frontend (React)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: aqua-frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        # --frozen-lockfile: CI must build exactly what bun.lock pins, never
+        # silently resolve newer versions. This also sidesteps bunfig.toml's
+        # 24h minimumReleaseAge guard, which only applies to resolution.
+        run: bun install --frozen-lockfile
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Build
+        # A compile check only — this artifact is never deployed. The real
+        # VITE_API_URL is injected from the shared .env on the server (see
+        # scripts/deploy-frontend.sh), so a placeholder is enough here, and
+        # is still needed: .env is gitignored and api-client.ts reads the
+        # var at build time.
+        env:
+          VITE_API_URL: https://aqua-api.example.invalid
+        run: bun run build

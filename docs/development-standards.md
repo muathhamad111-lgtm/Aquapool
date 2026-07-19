@@ -133,6 +133,28 @@ omitting it.
   what each will do, and get that confirmed before implementation starts —
   same process used for Phase 1.
 
+## Continuous integration
+
+`.github/workflows/ci.yml` runs on every push to `main` and every pull
+request. It is the automated enforcement of the rules above — a red CI run
+means the change isn't ready, not that the check is wrong.
+
+- **`aqua-app` job**: `./vendor/bin/pint --test` (formatting) then
+  `php artisan test`. The suite runs on sqlite `:memory:` per `phpunit.xml`,
+  so no database service container is needed. Production is PostgreSQL — if
+  a test ever genuinely depends on Postgres-only behavior, add a service
+  container to the workflow rather than weakening the test.
+- **`aqua-frontend` job**: `bun install --frozen-lockfile` (CI must build
+  exactly what `bun.lock` pins), then `lint`, `typecheck` (`tsc --noEmit`),
+  then `build`. The build is a compile check only; its artifact is never
+  deployed, so `VITE_API_URL` is a placeholder there — the real value comes
+  from the server's shared `.env` via `scripts/deploy-frontend.sh`.
+
+There is no frontend test runner yet. Until there is, `typecheck` + `build`
+are the only automated safety net React code has, which is another reason
+layer 10 (Feature Tests in Laravel) is non-negotiable: business logic that
+lives in Laravel is the logic that's actually tested.
+
 ## Audit logging
 
 Every module that mutates data gets audit logging automatically — there is
