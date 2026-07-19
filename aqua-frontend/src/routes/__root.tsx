@@ -16,6 +16,13 @@ import { LanguageProvider } from "@/i18n/LanguageContext";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
+/**
+ * Hardcoded rather than derived from the request: `head` is static, and a
+ * crawler resolves og:image against nothing — only an absolute URL yields a
+ * link preview at all.
+ */
+const SITE_URL = "https://aqua.moathhamad.space";
+
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -100,16 +107,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "Leaders in luxury pool finishing, accessories, and maintenance across the Middle East.",
       },
-      {
-        property: "og:image",
-        content:
-          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b60b1683-ced5-4cc1-b7b2-92cb47e1a72a/id-preview-587ed06f--68f06f69-2f20-4706-b53b-6dea80081ba7.lovable.app-1782674962092.png",
-      },
-      {
-        name: "twitter:image",
-        content:
-          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b60b1683-ced5-4cc1-b7b2-92cb47e1a72a/id-preview-587ed06f--68f06f69-2f20-4706-b53b-6dea80081ba7.lovable.app-1782674962092.png",
-      },
+      // Absolute, because a crawler resolves og:image against nothing —
+      // a relative path yields no preview at all. Self-hosted from
+      // public/site/: this was previously a Lovable-hosted R2 URL, an
+      // external dependency for every page's link preview long after
+      // Lovable itself was removed from the project. Same picture, served
+      // from our own origin.
+      { property: "og:image", content: `${SITE_URL}/site/social-preview.jpg` },
+      { name: "twitter:image", content: `${SITE_URL}/site/social-preview.jpg` },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
