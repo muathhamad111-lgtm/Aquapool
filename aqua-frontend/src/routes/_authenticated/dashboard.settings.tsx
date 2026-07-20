@@ -483,51 +483,10 @@ function ContactForm() {
   if (q.isLoading) return <Spinner />;
   return (
     <>
-      <Card title="معلومات التواصل">
-        <Grid>
-          <AdminField
-            label="الهاتف"
-            value={v.phone}
-            onChange={(x) => setV({ ...v, phone: x })}
-            dir="ltr"
-          />
-          <AdminField
-            label="واتساب"
-            value={v.whatsapp}
-            onChange={(x) => setV({ ...v, whatsapp: x })}
-            dir="ltr"
-          />
-          <AdminField
-            label="البريد"
-            value={v.email}
-            onChange={(x) => setV({ ...v, email: x })}
-            dir="ltr"
-          />
-          <AdminField
-            label="ساعات العمل (عربي)"
-            value={v.hours_ar}
-            onChange={(x) => setV({ ...v, hours_ar: x })}
-          />
-          <AdminField
-            label="ساعات العمل (إنجليزي)"
-            value={v.hours_en}
-            onChange={(x) => setV({ ...v, hours_en: x })}
-            dir="ltr"
-          />
-          <div />
-          <AdminField
-            label="العنوان (عربي)"
-            value={v.address_ar}
-            onChange={(x) => setV({ ...v, address_ar: x })}
-          />
-          <AdminField
-            label="العنوان (إنجليزي)"
-            value={v.address_en}
-            onChange={(x) => setV({ ...v, address_en: x })}
-            dir="ltr"
-          />
-        </Grid>
-      </Card>
+      {/* Address, phone, email and hours used to live here as one shared
+          set. They belong to individual branches now (لوحة التحكم ←
+          الفروع), so only the social accounts remain — each icon appears on
+          the site only when its link is filled in. */}
       <Card title="وسائل التواصل الاجتماعي">
         <Grid>
           <AdminField
@@ -552,6 +511,12 @@ function ContactForm() {
             label="LinkedIn URL"
             value={v.linkedin}
             onChange={(x) => setV({ ...v, linkedin: x })}
+            dir="ltr"
+          />
+          <AdminField
+            label="واتساب (رقم)"
+            value={v.whatsapp}
+            onChange={(x) => setV({ ...v, whatsapp: x })}
             dir="ltr"
           />
         </Grid>

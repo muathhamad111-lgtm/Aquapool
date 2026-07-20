@@ -1,37 +1,26 @@
 import { Link } from "@tanstack/react-router";
-import { Instagram, Linkedin, Twitter, Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin, Phone } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
 import { pick } from "@/lib/content";
-import { useSiteSetting } from "@/lib/settings-api";
 import { branchAddress, usePublicBranches } from "@/lib/branches-api";
+import { SocialLinks } from "@/components/SocialLinks";
 import logoWhite from "@/assets/logo/logo-white.svg";
-
-type ContactSetting = {
-  phone?: string;
-  email?: string;
-  address_ar?: string;
-  address_en?: string;
-  instagram?: string;
-  facebook?: string;
-  twitter?: string;
-  linkedin?: string;
-};
 
 export function Footer() {
   const { t, lang } = useLang();
-  const contact = useSiteSetting<ContactSetting>("contact");
   const { data: branches = [] } = usePublicBranches();
 
   // The footer has room for one location, so it shows the primary branch —
   // the first in sort order; every branch is listed on the contact page.
-  // The site setting stays as the fallback for the window before any
-  // branch exists.
+  //
+  // No fallback to the old site setting: branches own these details now and
+  // the setting's copies are no longer editable in the admin, so falling
+  // back to them would pin stale data on every page with no way to correct
+  // it. With no branches the block simply renders nothing.
   const primary = branches[0];
-  const address = primary
-    ? branchAddress(primary, lang)
-    : pick(contact?.address_ar, contact?.address_en, lang) || t.contact.address;
-  const email = primary?.email || contact?.email || "info@aqua-pool-group.com";
-  const phone = primary?.phone || contact?.phone || "+966 500 000 000";
+  const address = primary ? branchAddress(primary, lang) : "";
+  const email = primary?.email ?? "";
+  const phone = primary?.phone ?? "";
 
   return (
     <footer className="bg-deep text-white/85 mt-16 sm:mt-20 relative overflow-hidden">
@@ -79,20 +68,29 @@ export function Footer() {
             <h5 className="text-white font-bold text-xs sm:text-sm uppercase tracking-widest">
               {t.footer.contact}
             </h5>
+            {/* Each line appears only when the primary branch actually has
+                that detail — every field but the name is optional. */}
             <ul className="space-y-3 text-sm opacity-70">
-              <li className="flex items-start gap-2">
-                <MapPin className="size-4 shrink-0 mt-0.5" />{" "}
-                <span className="min-w-0 break-words">{address}</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Mail className="size-4 shrink-0 mt-0.5" />{" "}
-                <span className="min-w-0 break-all" dir="ltr">
-                  {email}
-                </span>
-              </li>
-              <li className="flex items-center gap-2" dir="ltr">
-                <Phone className="size-4 shrink-0" /> {phone}
-              </li>
+              {address && (
+                <li className="flex items-start gap-2">
+                  <MapPin className="size-4 shrink-0 mt-0.5" />{" "}
+                  <span className="min-w-0 break-words">{address}</span>
+                </li>
+              )}
+              {email && (
+                <li className="flex items-start gap-2">
+                  <Mail className="size-4 shrink-0 mt-0.5" />{" "}
+                  <a href={`mailto:${email}`} className="min-w-0 break-all" dir="ltr">
+                    {email}
+                  </a>
+                </li>
+              )}
+              {phone && (
+                <li className="flex items-center gap-2" dir="ltr">
+                  <Phone className="size-4 shrink-0" />{" "}
+                  <a href={`tel:${phone.replace(/\s/g, "")}`}>{phone}</a>
+                </li>
+              )}
             </ul>
           </div>
         </div>
@@ -101,38 +99,9 @@ export function Footer() {
           <p>
             © {new Date().getFullYear()} Aqua Pool Group. {t.footer.rights}.
           </p>
-          <div className="flex gap-5">
-            {contact?.linkedin && (
-              <a
-                href={contact.linkedin}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="LinkedIn"
-              >
-                <Linkedin className="size-4 hover:text-mint" />
-              </a>
-            )}
-            {contact?.instagram && (
-              <a
-                href={contact.instagram}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Instagram"
-              >
-                <Instagram className="size-4 hover:text-mint" />
-              </a>
-            )}
-            {contact?.twitter && (
-              <a
-                href={contact.twitter}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Twitter"
-              >
-                <Twitter className="size-4 hover:text-mint" />
-              </a>
-            )}
-          </div>
+          {/* Facebook and WhatsApp were editable in the admin but had no
+              icon here at all until this moved to the shared component. */}
+          <SocialLinks />
         </div>
       </div>
     </footer>
