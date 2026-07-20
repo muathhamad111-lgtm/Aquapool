@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
-import { ChevronDown } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // `size` is omitted because the native input attribute of that name is a
@@ -54,8 +54,11 @@ const SIZES: Record<
   // more scrolling than reading.
   md: {
     wrapper: "px-4 py-3",
-    field: "text-base font-semibold",
-    label: "text-base font-normal",
+    // 15px / medium, not 16px / semibold: bold filled values read as heavy
+    // across a nine-field form. The label matches so the placeholder and
+    // the typed value share one weight.
+    field: "text-[15px] font-medium",
+    label: "text-[15px] font-normal",
     labelFloated: "text-xs font-medium",
     labelFocused: "peer-focus:text-xs peer-focus:font-medium",
     multilineTop: "top-[24px]",
@@ -210,9 +213,15 @@ export const FormField = React.forwardRef<
                 position="popper"
                 sideOffset={6}
                 className={cn(
-                  "z-50 max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-2xl",
-                  "border border-white/60 bg-white/75 backdrop-blur-xl",
-                  "shadow-[0_12px_40px_rgba(28,28,30,0.16)]",
+                  // Width pinned to the trigger, not just min-width, so the
+                  // panel is always exactly as wide as the field it opens
+                  // from — never shrinking to its content.
+                  "z-50 max-h-72 w-[var(--radix-select-trigger-width)] overflow-hidden rounded-2xl",
+                  // Apple-style frost: heavier blur + saturation over a
+                  // barely-there panel, a hairline light border, and a soft
+                  // deep shadow so it lifts off the page.
+                  "border border-white/40 bg-white/70 backdrop-blur-2xl backdrop-saturate-150",
+                  "shadow-[0_16px_48px_-8px_rgba(28,28,30,0.24)]",
                   "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
                   "data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
                 )}
@@ -223,12 +232,19 @@ export const FormField = React.forwardRef<
                       key={opt.value}
                       value={opt.value}
                       className={cn(
-                        "relative flex cursor-pointer select-none items-center rounded-xl px-3 py-2.5",
-                        "text-sm font-semibold text-[#1C1C1E] outline-none",
-                        "data-[highlighted]:bg-white/80 data-[state=checked]:bg-teal/15",
+                        "relative flex cursor-pointer select-none items-center justify-between gap-2",
+                        "rounded-xl px-3 py-2 text-sm font-normal text-[#1C1C1E] outline-none",
+                        // Neutral grey wash on hover/keyboard focus — the
+                        // quiet macOS-menu highlight rather than a colour.
+                        "data-[highlighted]:bg-black/[0.055] data-[state=checked]:font-medium",
                       )}
                     >
                       <SelectPrimitive.ItemText>{opt.label}</SelectPrimitive.ItemText>
+                      {/* A check marks the current choice — the panel is
+                          translucent, so a tint alone reads weakly. */}
+                      <SelectPrimitive.ItemIndicator>
+                        <Check className="size-4 text-teal" />
+                      </SelectPrimitive.ItemIndicator>
                     </SelectPrimitive.Item>
                   ))}
                 </SelectPrimitive.Viewport>
