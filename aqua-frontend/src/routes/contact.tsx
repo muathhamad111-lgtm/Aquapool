@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
 import { PageHero } from "@/components/Section";
-import { FormField } from "@/components/FormField";
+import { FormField as BaseFormField, type FormFieldProps } from "@/components/FormField";
 import { ApiError } from "@/lib/api-client";
 import { usePublicBranches } from "@/lib/branches-api";
 import { BranchesAccordion } from "@/components/BranchesAccordion";
@@ -45,6 +45,15 @@ export const Route = createFileRoute("/contact")({
   component: ContactPage,
 });
 
+/**
+ * The quote form's scale. `lg` reads well on the two-field login screen but
+ * stacks to ~69px across nine fields here — this is the same component a
+ * step down, applied once rather than on every field.
+ */
+function FormField(props: Omit<FormFieldProps, "size">) {
+  return <BaseFormField {...props} size="md" />;
+}
+
 function ContactPage() {
   const { t } = useLang();
   const { data: branches = [] } = usePublicBranches();
@@ -72,17 +81,21 @@ function ContactPage() {
     e.preventDefault();
     setError(null);
     const form = e.currentTarget;
-    const fd = new FormData(form);
+    // Read from state, not FormData. Every field here is already a
+    // controlled component, and the dropdowns now submit through a hidden
+    // native select that falls back to its first option when nothing has
+    // been chosen — a FormData read would report a budget and a timeline
+    // the visitor never picked.
     const payload = {
-      name: String(fd.get("name") ?? ""),
-      email: String(fd.get("email") ?? ""),
-      phone: String(fd.get("phone") ?? ""),
-      city: String(fd.get("city") ?? ""),
-      project_type: String(fd.get("projectType") ?? ""),
-      budget: String(fd.get("budget") ?? ""),
-      timeline: String(fd.get("timeline") ?? ""),
-      subject: String(fd.get("subject") ?? ""),
-      message: String(fd.get("message") ?? ""),
+      name: formName,
+      email: formEmail,
+      phone: formPhone,
+      city: formCity,
+      project_type: formProjectType,
+      budget: formBudget,
+      timeline: formTimeline,
+      subject: formSubject,
+      message: formMessage,
     };
     try {
       await submitMessage.mutateAsync(payload);

@@ -1,4 +1,5 @@
 import * as React from "react";
+import * as SelectPrimitive from "@radix-ui/react-select";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -22,7 +23,7 @@ export interface FormFieldOption {
  * and type scale of the admin's other controls (search, filters, the
  * specifications editor), which `lg` was close to double.
  */
-export type FormFieldSize = "lg" | "sm";
+export type FormFieldSize = "lg" | "md" | "sm";
 
 // Every class is written out in full — Tailwind extracts class names
 // statically, so an interpolated `peer-focus:${...}` would silently produce
@@ -47,6 +48,17 @@ const SIZES: Record<
     // Roughly one line-height below the top padding, so the label sits on
     // the textarea's first line rather than floating above it.
     multilineTop: "top-[30px]",
+  },
+  // The public site's long forms. `lg` suits a two-field login screen but
+  // stacks up at ~69px each across the quote form's nine fields, which is
+  // more scrolling than reading.
+  md: {
+    wrapper: "px-4 py-3",
+    field: "text-base font-semibold",
+    label: "text-base font-normal",
+    labelFloated: "text-xs font-medium",
+    labelFocused: "peer-focus:text-xs peer-focus:font-medium",
+    multilineTop: "top-[24px]",
   },
   sm: {
     wrapper: "px-4 py-2.5",
@@ -156,28 +168,73 @@ export const FormField = React.forwardRef<
         )}
       >
         {select ? (
-          <>
-            <select
-              ref={ref as React.Ref<HTMLSelectElement>}
+          // `name` has to reach Root, not the trigger: that is what makes
+          // Radix render the hidden native select the surrounding <form>
+          // needs. Without it a FormData read comes back empty and the
+          // choice is silently dropped on submit.
+          <SelectPrimitive.Root
+            value={fieldValue}
+            onValueChange={onChange}
+            required={required}
+            name={rest.name}
+          >
+            {/* The trigger is the `peer`, so the floating label reacts to it
+                exactly as it does to a real input. */}
+            <SelectPrimitive.Trigger
               id={inputId}
-              value={fieldValue}
-              onChange={(e) => onChange(e.target.value)}
-              required={required}
-              className={cn(fieldClassName, "appearance-none pe-6 cursor-pointer")}
-              {...(rest as unknown as React.SelectHTMLAttributes<HTMLSelectElement>)}
+              className={cn(
+                fieldClassName,
+                "flex items-center justify-between gap-2 pe-6 text-start cursor-pointer",
+                // Without a min-height the trigger collapses to zero: the
+                // floating label plays placeholder here, so an unselected
+                // field has no text inside the button to give it height.
+                // 1.5em tracks the font size, matching what a line of text
+                // occupies in the input and textarea variants.
+                "min-h-[1.5em]",
+              )}
             >
-              <option value="" disabled hidden></option>
-              {options.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-            <ChevronDown
-              aria-hidden
-              className="pointer-events-none absolute end-4 top-1/2 size-4 -translate-y-1/2 text-[#6E6E73]"
-            />
-          </>
+              <SelectPrimitive.Value />
+              <SelectPrimitive.Icon asChild>
+                <ChevronDown
+                  aria-hidden
+                  className="pointer-events-none absolute end-4 top-1/2 size-4 -translate-y-1/2 text-[#6E6E73]"
+                />
+              </SelectPrimitive.Icon>
+            </SelectPrimitive.Trigger>
+
+            <SelectPrimitive.Portal>
+              {/* Frosted glass: a translucent panel over a blurred backdrop.
+                  A native <select> can't be styled at all — its list is drawn
+                  by the OS — which is why this is a Radix listbox. */}
+              <SelectPrimitive.Content
+                position="popper"
+                sideOffset={6}
+                className={cn(
+                  "z-50 max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-2xl",
+                  "border border-white/60 bg-white/75 backdrop-blur-xl",
+                  "shadow-[0_12px_40px_rgba(28,28,30,0.16)]",
+                  "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
+                  "data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
+                )}
+              >
+                <SelectPrimitive.Viewport className="p-1.5">
+                  {options.map((opt) => (
+                    <SelectPrimitive.Item
+                      key={opt.value}
+                      value={opt.value}
+                      className={cn(
+                        "relative flex cursor-pointer select-none items-center rounded-xl px-3 py-2.5",
+                        "text-sm font-semibold text-[#1C1C1E] outline-none",
+                        "data-[highlighted]:bg-white/80 data-[state=checked]:bg-teal/15",
+                      )}
+                    >
+                      <SelectPrimitive.ItemText>{opt.label}</SelectPrimitive.ItemText>
+                    </SelectPrimitive.Item>
+                  ))}
+                </SelectPrimitive.Viewport>
+              </SelectPrimitive.Content>
+            </SelectPrimitive.Portal>
+          </SelectPrimitive.Root>
         ) : multiline ? (
           <textarea
             ref={ref as React.Ref<HTMLTextAreaElement>}
