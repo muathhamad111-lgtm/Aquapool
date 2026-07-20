@@ -185,7 +185,9 @@ function ProductsAdmin() {
     return cache;
   }, [categories]);
 
-  const allItems = list.data ?? [];
+  // Memoised so the `?? []` fallback keeps a stable reference while loading;
+  // otherwise the filter useMemo below recomputes on every render.
+  const allItems = useMemo(() => list.data ?? [], [list.data]);
   const items = useMemo(() => {
     const q = search.trim().toLowerCase();
     const allowed = filterCat ? descendantsOf.get(filterCat) : null;

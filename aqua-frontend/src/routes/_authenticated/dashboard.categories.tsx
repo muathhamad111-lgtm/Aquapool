@@ -75,7 +75,10 @@ function CategoriesAdmin() {
   const updateCategory = useUpdateProductCategory();
   const deleteCategory = useDeleteProductCategory();
 
-  const items = list.data ?? [];
+  // Memoised so the `?? []` fallback keeps a stable array reference across
+  // renders while data is loading — otherwise every dependent useMemo below
+  // sees a "new" array each render and recomputes needlessly.
+  const items = useMemo(() => list.data ?? [], [list.data]);
 
   // Items belonging to the active kind tab (used for tree + breadcrumb)
   const kindItems = useMemo(
