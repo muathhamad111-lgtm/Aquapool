@@ -36,6 +36,7 @@ const SIZES: Record<
     label: string;
     labelFloated: string;
     labelFocused: string;
+    labelOpen: string;
     multilineTop: string;
   }
 > = {
@@ -45,6 +46,7 @@ const SIZES: Record<
     label: "text-base font-normal",
     labelFloated: "text-sm font-medium",
     labelFocused: "peer-focus:text-sm peer-focus:font-medium",
+    labelOpen: "peer-data-[state=open]:text-sm peer-data-[state=open]:font-medium",
     // Roughly one line-height below the top padding, so the label sits on
     // the textarea's first line rather than floating above it.
     multilineTop: "top-[30px]",
@@ -61,6 +63,7 @@ const SIZES: Record<
     label: "text-[15px] font-normal",
     labelFloated: "text-xs font-medium",
     labelFocused: "peer-focus:text-xs peer-focus:font-medium",
+    labelOpen: "peer-data-[state=open]:text-xs peer-data-[state=open]:font-medium",
     multilineTop: "top-[24px]",
   },
   sm: {
@@ -69,6 +72,7 @@ const SIZES: Record<
     label: "text-sm font-normal",
     labelFloated: "text-xs font-medium",
     labelFocused: "peer-focus:text-xs peer-focus:font-medium",
+    labelOpen: "peer-data-[state=open]:text-xs peer-data-[state=open]:font-medium",
     multilineTop: "top-[21px]",
   },
 };
@@ -206,9 +210,9 @@ export const FormField = React.forwardRef<
             </SelectPrimitive.Trigger>
 
             <SelectPrimitive.Portal>
-              {/* Frosted glass: a translucent panel over a blurred backdrop.
-                  A native <select> can't be styled at all — its list is drawn
-                  by the OS — which is why this is a Radix listbox. */}
+              {/* Frosted glass, Fey-style. A native <select> can't be styled
+                  at all — its list is drawn by the OS — which is why this is
+                  a Radix listbox. */}
               <SelectPrimitive.Content
                 position="popper"
                 sideOffset={6}
@@ -217,11 +221,13 @@ export const FormField = React.forwardRef<
                   // panel is always exactly as wide as the field it opens
                   // from — never shrinking to its content.
                   "z-50 max-h-72 w-[var(--radix-select-trigger-width)] overflow-hidden rounded-2xl",
-                  // Apple-style frost: heavier blur + saturation over a
-                  // barely-there panel, a hairline light border, and a soft
-                  // deep shadow so it lifts off the page.
-                  "border border-white/40 bg-white/70 backdrop-blur-2xl backdrop-saturate-150",
-                  "shadow-[0_16px_48px_-8px_rgba(28,28,30,0.24)]",
+                  // Translucent frost + a hairline border.
+                  "border border-white/50 bg-white/70 backdrop-blur-2xl backdrop-saturate-150",
+                  // Two stacked shadows: a soft deep drop that lifts the
+                  // panel off the page, and an inset top-highlight — the
+                  // bright 1px line that reads as light catching the panel's
+                  // upper edge. That top glint is the Fey signature.
+                  "shadow-[0_20px_60px_-12px_rgba(28,28,30,0.22),inset_0_1px_0_rgba(255,255,255,0.95)]",
                   "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
                   "data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
                 )}
@@ -233,7 +239,8 @@ export const FormField = React.forwardRef<
                       value={opt.value}
                       className={cn(
                         "relative flex cursor-pointer select-none items-center justify-between gap-2",
-                        "rounded-xl px-3 py-2 text-sm font-normal text-[#1C1C1E] outline-none",
+                        // Compact rows, Fey-tight.
+                        "rounded-[10px] px-3 py-2.5 text-sm font-normal text-[#1C1C1E] outline-none",
                         // Neutral grey wash on hover/keyboard focus — the
                         // quiet macOS-menu highlight rather than a colour.
                         "data-[highlighted]:bg-black/[0.055] data-[state=checked]:font-medium",
@@ -281,8 +288,18 @@ export const FormField = React.forwardRef<
           className={cn(
             "pointer-events-none absolute start-4 -translate-y-1/2 bg-white px-1.5",
             "transition-all duration-150 ease-out",
-            "peer-focus:top-0 peer-focus:text-[#1C1C1E]",
-            scale.labelFocused,
+            // A select's trigger keeps focus after the panel closes, so
+            // `peer-focus` would leave the label floated over an empty
+            // field once it had merely been opened. Float it on the panel's
+            // open state instead — down again when closed with no value.
+            // Inputs and textareas still float on focus, which is right for
+            // a caret sitting in an empty field.
+            select
+              ? cn(
+                  "peer-data-[state=open]:top-0 peer-data-[state=open]:text-[#1C1C1E]",
+                  scale.labelOpen,
+                )
+              : cn("peer-focus:top-0 peer-focus:text-[#1C1C1E]", scale.labelFocused),
             floated
               ? cn("top-0 text-[#6E6E73]", scale.labelFloated)
               : cn("text-[#6E6E73]", scale.label, multiline ? scale.multilineTop : "top-1/2"),
