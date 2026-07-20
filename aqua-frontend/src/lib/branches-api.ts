@@ -1,9 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import type { DbBranch } from "@/lib/admin-api";
 import { pick } from "@/lib/content";
 
 const PUBLIC_QUERY_KEY = ["public", "branches"];
+const ADMIN_QUERY_KEY = ["admin", "branches"];
 
 /**
  * Published branches in display order. The first is the primary one — the
@@ -15,6 +16,49 @@ export function usePublicBranches() {
     queryKey: PUBLIC_QUERY_KEY,
     queryFn: () => apiClient.get<DbBranch[]>("/api/v1/branches"),
     staleTime: 60_000,
+  });
+}
+
+/** Every branch, published or not — the admin list. */
+export function useAdminBranches() {
+  return useQuery({
+    queryKey: ADMIN_QUERY_KEY,
+    queryFn: () => apiClient.get<DbBranch[]>("/api/v1/admin/branches"),
+  });
+}
+
+type BranchPayload = Omit<DbBranch, "id" | "created_at" | "updated_at">;
+
+function invalidateBranchQueries(qc: ReturnType<typeof useQueryClient>) {
+  qc.invalidateQueries({ queryKey: ADMIN_QUERY_KEY });
+  // The public list feeds the contact page and the footer, so a change
+  // has to reach both, not just the dashboard the admin is looking at.
+  qc.invalidateQueries({ queryKey: PUBLIC_QUERY_KEY });
+}
+
+export function useCreateBranch() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: BranchPayload) =>
+      apiClient.post<DbBranch>("/api/v1/admin/branches", payload),
+    onSuccess: () => invalidateBranchQueries(qc),
+  });
+}
+
+export function useUpdateBranch() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...payload }: BranchPayload & { id: string }) =>
+      apiClient.patch<DbBranch>(`/api/v1/admin/branches/${id}`, payload),
+    onSuccess: () => invalidateBranchQueries(qc),
+  });
+}
+
+export function useDeleteBranch() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiClient.delete(`/api/v1/admin/branches/${id}`),
+    onSuccess: () => invalidateBranchQueries(qc),
   });
 }
 

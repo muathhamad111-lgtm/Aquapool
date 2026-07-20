@@ -1,6 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
+  MapPin,
   Wrench,
   ImageIcon,
   Package,
@@ -39,6 +40,7 @@ const content: NavItem[] = [
   { title: "المشاريع", url: "/dashboard/projects", icon: ImageIcon },
   { title: "المنتجات", url: "/dashboard/products", icon: Package },
   { title: "التصنيفات", url: "/dashboard/categories", icon: FolderTree },
+  { title: "الفروع", url: "/dashboard/branches", icon: MapPin },
 ];
 
 const ops: NavItem[] = [

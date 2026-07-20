@@ -27,6 +27,7 @@ import { Route as AuthenticatedDashboardProjectsRouteImport } from './routes/_au
 import { Route as AuthenticatedDashboardProductsRouteImport } from './routes/_authenticated/dashboard.products'
 import { Route as AuthenticatedDashboardMessagesRouteImport } from './routes/_authenticated/dashboard.messages'
 import { Route as AuthenticatedDashboardCategoriesRouteImport } from './routes/_authenticated/dashboard.categories'
+import { Route as AuthenticatedDashboardBranchesRouteImport } from './routes/_authenticated/dashboard.branches'
 import { Route as AuthenticatedDashboardAuditRouteImport } from './routes/_authenticated/dashboard.audit'
 
 const ServicesRoute = ServicesRouteImport.update({
@@ -126,6 +127,12 @@ const AuthenticatedDashboardCategoriesRoute =
     path: '/categories',
     getParentRoute: () => AuthenticatedDashboardRoute,
   } as any)
+const AuthenticatedDashboardBranchesRoute =
+  AuthenticatedDashboardBranchesRouteImport.update({
+    id: '/branches',
+    path: '/branches',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
 const AuthenticatedDashboardAuditRoute =
   AuthenticatedDashboardAuditRouteImport.update({
     id: '/audit',
@@ -144,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/products/$slug': typeof ProductsSlugRoute
   '/products/': typeof ProductsIndexRoute
   '/dashboard/audit': typeof AuthenticatedDashboardAuditRoute
+  '/dashboard/branches': typeof AuthenticatedDashboardBranchesRoute
   '/dashboard/categories': typeof AuthenticatedDashboardCategoriesRoute
   '/dashboard/messages': typeof AuthenticatedDashboardMessagesRoute
   '/dashboard/products': typeof AuthenticatedDashboardProductsRoute
@@ -163,6 +171,7 @@ export interface FileRoutesByTo {
   '/products/$slug': typeof ProductsSlugRoute
   '/products': typeof ProductsIndexRoute
   '/dashboard/audit': typeof AuthenticatedDashboardAuditRoute
+  '/dashboard/branches': typeof AuthenticatedDashboardBranchesRoute
   '/dashboard/categories': typeof AuthenticatedDashboardCategoriesRoute
   '/dashboard/messages': typeof AuthenticatedDashboardMessagesRoute
   '/dashboard/products': typeof AuthenticatedDashboardProductsRoute
@@ -185,6 +194,7 @@ export interface FileRoutesById {
   '/products/$slug': typeof ProductsSlugRoute
   '/products/': typeof ProductsIndexRoute
   '/_authenticated/dashboard/audit': typeof AuthenticatedDashboardAuditRoute
+  '/_authenticated/dashboard/branches': typeof AuthenticatedDashboardBranchesRoute
   '/_authenticated/dashboard/categories': typeof AuthenticatedDashboardCategoriesRoute
   '/_authenticated/dashboard/messages': typeof AuthenticatedDashboardMessagesRoute
   '/_authenticated/dashboard/products': typeof AuthenticatedDashboardProductsRoute
@@ -207,6 +217,7 @@ export interface FileRouteTypes {
     | '/products/$slug'
     | '/products/'
     | '/dashboard/audit'
+    | '/dashboard/branches'
     | '/dashboard/categories'
     | '/dashboard/messages'
     | '/dashboard/products'
@@ -226,6 +237,7 @@ export interface FileRouteTypes {
     | '/products/$slug'
     | '/products'
     | '/dashboard/audit'
+    | '/dashboard/branches'
     | '/dashboard/categories'
     | '/dashboard/messages'
     | '/dashboard/products'
@@ -247,6 +259,7 @@ export interface FileRouteTypes {
     | '/products/$slug'
     | '/products/'
     | '/_authenticated/dashboard/audit'
+    | '/_authenticated/dashboard/branches'
     | '/_authenticated/dashboard/categories'
     | '/_authenticated/dashboard/messages'
     | '/_authenticated/dashboard/products'
@@ -397,6 +410,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardCategoriesRouteImport
       parentRoute: typeof AuthenticatedDashboardRoute
     }
+    '/_authenticated/dashboard/branches': {
+      id: '/_authenticated/dashboard/branches'
+      path: '/branches'
+      fullPath: '/dashboard/branches'
+      preLoaderRoute: typeof AuthenticatedDashboardBranchesRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
     '/_authenticated/dashboard/audit': {
       id: '/_authenticated/dashboard/audit'
       path: '/audit'
@@ -409,6 +429,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedDashboardRouteChildren {
   AuthenticatedDashboardAuditRoute: typeof AuthenticatedDashboardAuditRoute
+  AuthenticatedDashboardBranchesRoute: typeof AuthenticatedDashboardBranchesRoute
   AuthenticatedDashboardCategoriesRoute: typeof AuthenticatedDashboardCategoriesRoute
   AuthenticatedDashboardMessagesRoute: typeof AuthenticatedDashboardMessagesRoute
   AuthenticatedDashboardProductsRoute: typeof AuthenticatedDashboardProductsRoute
@@ -422,6 +443,7 @@ interface AuthenticatedDashboardRouteChildren {
 const AuthenticatedDashboardRouteChildren: AuthenticatedDashboardRouteChildren =
   {
     AuthenticatedDashboardAuditRoute: AuthenticatedDashboardAuditRoute,
+    AuthenticatedDashboardBranchesRoute: AuthenticatedDashboardBranchesRoute,
     AuthenticatedDashboardCategoriesRoute:
       AuthenticatedDashboardCategoriesRoute,
     AuthenticatedDashboardMessagesRoute: AuthenticatedDashboardMessagesRoute,

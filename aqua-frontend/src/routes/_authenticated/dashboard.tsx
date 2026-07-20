@@ -29,6 +29,10 @@ const TITLES: Record<string, { title: string; subtitle: string }> = {
     title: "التصنيفات",
     subtitle: "تصنيفات شجرية للمنتجات والخدمات والمشاريع",
   },
+  "/dashboard/branches": {
+    title: "الفروع",
+    subtitle: "مواقع الشركة الظاهرة في صفحة تواصل معنا",
+  },
   "/dashboard/messages": { title: "الرسائل الواردة", subtitle: "طلبات وعروض الأسعار من الزوار" },
   "/dashboard/users": {
     title: "إدارة المستخدمين",
