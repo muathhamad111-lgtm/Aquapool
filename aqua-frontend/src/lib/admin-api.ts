@@ -97,6 +97,8 @@ export type DbBranch = {
   street_en: string | null;
   email: string | null;
   phone: string | null;
+  /** An exact map link for this branch; the directions button prefers it. */
+  map_url: string | null;
   hours_ar: string | null;
   hours_en: string | null;
   sort_order: number;

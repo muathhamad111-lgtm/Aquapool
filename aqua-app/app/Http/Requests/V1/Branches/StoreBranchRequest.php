@@ -35,6 +35,13 @@ class StoreBranchRequest extends FormRequest
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
 
+            // Schemes are pinned to http/https rather than left to the
+            // generic `url` rule: this value is rendered straight into an
+            // href, and `javascript:` is a valid URL as far as that rule is
+            // concerned. Not restricted to Google's domains — a branch may
+            // reasonably be pinned on another map service.
+            'map_url' => ['nullable', 'url:http,https', 'max:2048'],
+
             'hours_ar' => ['nullable', 'string', 'max:255'],
             'hours_en' => ['nullable', 'string', 'max:255'],
 

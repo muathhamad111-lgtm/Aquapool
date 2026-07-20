@@ -26,6 +26,7 @@ class Branch extends Model
         'street_en',
         'email',
         'phone',
+        'map_url',
         'hours_ar',
         'hours_en',
         'sort_order',

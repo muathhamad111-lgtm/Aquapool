@@ -63,6 +63,7 @@ const empty: Form = {
   street_en: "",
   email: "",
   phone: "",
+  map_url: "",
   hours_ar: "",
   hours_en: "",
   sort_order: 0,
@@ -312,6 +313,15 @@ function BranchesAdmin() {
                 label="رقم التواصل"
                 value={form.phone}
                 onChange={(v) => setForm({ ...form, phone: v })}
+              />
+              <AdminField
+                label="رابط الموقع على الخرائط"
+                type="url"
+                dir="ltr"
+                placeholder="https://maps.app.goo.gl/…"
+                value={form.map_url}
+                onChange={(v) => setForm({ ...form, map_url: v })}
+                className="col-span-2"
               />
               <AdminField
                 label="ساعات العمل (عربي)"

@@ -30,6 +30,7 @@ class BranchFactory extends Factory
             'street_en' => fake()->streetAddress(),
             'email' => fake()->safeEmail(),
             'phone' => fake()->phoneNumber(),
+            'map_url' => null,
             'hours_ar' => 'السبت - الخميس · 9 صباحاً - 6 مساءً',
             'hours_en' => 'Sat - Thu · 9 AM - 6 PM',
             'sort_order' => fake()->numberBetween(1, 20),

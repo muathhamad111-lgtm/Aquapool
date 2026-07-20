@@ -106,6 +106,54 @@ class ManageBranchesTest extends TestCase
             ->assertJsonValidationErrors(['name_ar', 'name_en']);
     }
 
+    public function test_a_map_url_is_stored_and_returned(): void
+    {
+        $staff = User::factory()->create();
+        $url = 'https://maps.app.goo.gl/AbCdEf123';
+
+        $created = $this->actingAs($staff, 'sanctum')
+            ->postJson('/api/v1/admin/branches', $this->payload(['map_url' => $url]));
+
+        $created->assertStatus(201)->assertJsonPath('data.map_url', $url);
+        $this->getJson('/api/v1/branches')->assertJsonPath('data.0.map_url', $url);
+    }
+
+    public function test_a_branch_without_a_map_url_is_valid(): void
+    {
+        $staff = User::factory()->create();
+
+        $this->actingAs($staff, 'sanctum')
+            ->postJson('/api/v1/admin/branches', $this->payload())
+            ->assertStatus(201)
+            ->assertJsonPath('data.map_url', null);
+    }
+
+    public function test_a_malformed_map_url_fails_validation(): void
+    {
+        $staff = User::factory()->create();
+
+        $this->actingAs($staff, 'sanctum')
+            ->postJson('/api/v1/admin/branches', $this->payload(['map_url' => 'not a url']))
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['map_url']);
+    }
+
+    /**
+     * The value is rendered straight into an href, and `javascript:` passes
+     * the generic `url` rule — so the schemes are pinned to http/https.
+     */
+    public function test_a_javascript_scheme_map_url_is_rejected(): void
+    {
+        $staff = User::factory()->create();
+
+        $this->actingAs($staff, 'sanctum')
+            ->postJson('/api/v1/admin/branches', $this->payload([
+                'map_url' => 'javascript:alert(document.cookie)',
+            ]))
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['map_url']);
+    }
+
     public function test_an_invalid_email_fails_validation(): void
     {
         $staff = User::factory()->create();

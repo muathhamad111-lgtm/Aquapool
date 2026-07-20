@@ -19,9 +19,19 @@ that aren't per-location (WhatsApp, social links). The site footer shows the
 | `country_ar/en`, `region_ar/en`, `district_ar/en`, `street_ar/en` | nullable, max 255 | The address, split into parts |
 | `email` | nullable, valid email | |
 | `phone` | nullable, max 50 | Free text — international formats vary too much to validate |
+| `map_url` | nullable, `url:http,https`, max 2048 | An exact map link, pasted from Google Maps |
 | `hours_ar/en` | nullable, max 255 | Per branch; a second location often keeps different hours |
 | `sort_order` | nullable, integer | Display order; also picks the footer's branch |
 | `is_published` | nullable, boolean | Defaults to `true` |
+
+**`map_url`** is what the site's directions button opens when set. Without
+one it falls back to a Google Maps *search* built from the address, so a
+branch always has working directions. Schemes are pinned to `http`/`https`
+rather than using the generic `url` rule: the value is rendered straight
+into an `href`, and `javascript:` satisfies that rule. It is deliberately
+not restricted to Google's domains — a branch may reasonably be pinned on
+another map service. The column is 2048 chars because a Google Maps place
+URL carries an encoded name and a coordinate blob and routinely passes 255.
 
 **Only the name is required.** A real branch may have no street, no
 district, or no dedicated email — requiring those would force the admin to
