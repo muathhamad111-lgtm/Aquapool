@@ -179,13 +179,18 @@ function BranchesAdmin() {
                   <MapPin className="size-3.5 shrink-0 mt-0.5" />
                   <span>{branchAddress(branch, "ar") || "—"}</span>
                 </li>
-                <li className="flex items-center gap-2" dir="ltr">
+                {/* dir goes on the value, never on the row — on the <li> it
+                    flips the flex direction too, sending the icon to the
+                    opposite side from the address and hours rows. */}
+                <li className="flex items-center gap-2">
                   <Phone className="size-3.5 shrink-0" />
-                  <span>{branch.phone || "—"}</span>
+                  <span dir="ltr">{branch.phone || "—"}</span>
                 </li>
-                <li className="flex items-center gap-2 min-w-0" dir="ltr">
+                <li className="flex items-center gap-2 min-w-0">
                   <Mail className="size-3.5 shrink-0" />
-                  <span className="truncate">{branch.email || "—"}</span>
+                  <span className="truncate" dir="ltr">
+                    {branch.email || "—"}
+                  </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Clock className="size-3.5 shrink-0 mt-0.5" />

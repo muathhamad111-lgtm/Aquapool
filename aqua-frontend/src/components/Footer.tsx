@@ -86,9 +86,14 @@ export function Footer() {
                 </li>
               )}
               {phone && (
-                <li className="flex items-center gap-2" dir="ltr">
+                <li className="flex items-center gap-2">
                   <Phone className="size-4 shrink-0" />{" "}
-                  <a href={`tel:${phone.replace(/\s/g, "")}`}>{phone}</a>
+                  {/* dir on the number, never on the row: putting it on the
+                      <li> flips the flex direction too, so the icon jumps to
+                      the opposite side of the address and email above it. */}
+                  <a href={`tel:${phone.replace(/\s/g, "")}`} dir="ltr">
+                    {phone}
+                  </a>
                 </li>
               )}
             </ul>
