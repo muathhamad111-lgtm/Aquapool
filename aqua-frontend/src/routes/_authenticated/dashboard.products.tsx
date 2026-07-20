@@ -1,4 +1,4 @@
-import { FormField } from "@/components/FormField";
+import { AdminField } from "@/components/admin/AdminField";
 import { PageHeaderAction } from "@/components/admin/PageHeaderAction";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
@@ -29,6 +29,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Search, X } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { adminControl } from "@/components/admin/field-styles";
 
 export const Route = createFileRoute("/_authenticated/dashboard/products")({
   ssr: false,
@@ -228,7 +230,7 @@ function ProductsAdmin() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="ابحث بالاسم أو الوصف…"
-            className="w-full h-9 rtl:pr-9 rtl:pl-3 ltr:pl-9 ltr:pr-3 rounded-lg border border-border bg-white text-xs focus:border-teal focus:ring-2 focus:ring-teal/20 outline-none"
+            className={cn(adminControl, "w-full rtl:pr-9 rtl:pl-3 ltr:pl-9 ltr:pr-3")}
           />
         </div>
         {categories.length > 0 && (
@@ -345,36 +347,36 @@ function ProductsAdmin() {
               recommended="1000 × 1000 بكسل (مربّعة 1:1)"
             />
             <div className="grid grid-cols-2 gap-4">
-              <FormField
+              <AdminField
                 label="الاسم (عربي)"
                 value={form.title_ar}
                 onChange={(v) => setForm({ ...form, title_ar: v })}
                 required
               />
-              <FormField
+              <AdminField
                 label="الاسم (إنجليزي)"
                 value={form.title_en}
                 onChange={(v) => setForm({ ...form, title_en: v })}
                 dir="ltr"
                 required
               />
-              <FormField
+              <AdminField
                 label="وصف مختصر (عربي)"
                 value={form.caption_ar}
                 onChange={(v) => setForm({ ...form, caption_ar: v })}
               />
-              <FormField
+              <AdminField
                 label="وصف مختصر (إنجليزي)"
                 value={form.caption_en}
                 onChange={(v) => setForm({ ...form, caption_en: v })}
                 dir="ltr"
               />
-              <FormField
+              <AdminField
                 label="السعر/الوصف السعري (عربي)"
                 value={form.price_label_ar}
                 onChange={(v) => setForm({ ...form, price_label_ar: v })}
               />
-              <FormField
+              <AdminField
                 label="السعر/الوصف السعري (إنجليزي)"
                 value={form.price_label_en}
                 onChange={(v) => setForm({ ...form, price_label_en: v })}
@@ -409,7 +411,7 @@ function ProductsAdmin() {
               )}
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <FormField
+              <AdminField
                 label="الترتيب"
                 type="number"
                 value={String(form.sort_order)}

@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { ApiError } from "@/lib/api-client";
 import { useSiteSettings, useUpdateSiteSetting } from "@/lib/settings-api";
 import { RichTextArea } from "@/components/admin/RichTextArea";
-import { FormField } from "@/components/FormField";
+import { AdminField } from "@/components/admin/AdminField";
 import {
   Plus,
   Trash2,
@@ -225,25 +225,25 @@ function HeroForm() {
   return (
     <Card title="القسم الرئيسي (Hero)">
       <Grid>
-        <FormField
+        <AdminField
           label="العنوان (عربي)"
           value={v.title_ar}
           onChange={(x) => setV({ ...v, title_ar: x })}
         />
-        <FormField
+        <AdminField
           label="العنوان (إنجليزي)"
           value={v.title_en}
           onChange={(x) => setV({ ...v, title_en: x })}
           dir="ltr"
         />
-        <FormField
+        <AdminField
           label="العنوان الفرعي (عربي)"
           multiline
           rows={3}
           value={v.subtitle_ar}
           onChange={(x) => setV({ ...v, subtitle_ar: x })}
         />
-        <FormField
+        <AdminField
           label="العنوان الفرعي (إنجليزي)"
           multiline
           rows={3}
@@ -251,12 +251,12 @@ function HeroForm() {
           onChange={(x) => setV({ ...v, subtitle_en: x })}
           dir="ltr"
         />
-        <FormField
+        <AdminField
           label="نص الزر (عربي)"
           value={v.cta_label_ar}
           onChange={(x) => setV({ ...v, cta_label_ar: x })}
         />
-        <FormField
+        <AdminField
           label="نص الزر (إنجليزي)"
           value={v.cta_label_en}
           onChange={(x) => setV({ ...v, cta_label_en: x })}
@@ -355,23 +355,23 @@ function ValuesForm() {
     <>
       <Card title="عنوان القسم">
         <Grid>
-          <FormField
+          <AdminField
             label="العنوان التمهيدي (عربي)"
             value={v.eyebrow_ar}
             onChange={(x) => setV({ ...v, eyebrow_ar: x })}
           />
-          <FormField
+          <AdminField
             label="العنوان التمهيدي (إنجليزي)"
             value={v.eyebrow_en}
             onChange={(x) => setV({ ...v, eyebrow_en: x })}
             dir="ltr"
           />
-          <FormField
+          <AdminField
             label="العنوان (عربي)"
             value={v.title_ar}
             onChange={(x) => setV({ ...v, title_ar: x })}
           />
-          <FormField
+          <AdminField
             label="العنوان (إنجليزي)"
             value={v.title_en}
             onChange={(x) => setV({ ...v, title_en: x })}
@@ -421,7 +421,7 @@ function ValuesForm() {
                   </div>
                 </div>
                 <Grid>
-                  <FormField
+                  <AdminField
                     label="الأيقونة"
                     select
                     options={Object.keys(VALUE_ICONS).map((k) => ({ value: k, label: k }))}
@@ -429,25 +429,25 @@ function ValuesForm() {
                     onChange={(x) => updateItem(i, { icon: x as ValueIcon })}
                   />
                   <div />
-                  <FormField
+                  <AdminField
                     label="العنوان (عربي)"
                     value={it.title_ar}
                     onChange={(x) => updateItem(i, { title_ar: x })}
                   />
-                  <FormField
+                  <AdminField
                     label="العنوان (إنجليزي)"
                     value={it.title_en}
                     onChange={(x) => updateItem(i, { title_en: x })}
                     dir="ltr"
                   />
-                  <FormField
+                  <AdminField
                     label="الوصف (عربي)"
                     multiline
                     rows={3}
                     value={it.desc_ar}
                     onChange={(x) => updateItem(i, { desc_ar: x })}
                   />
-                  <FormField
+                  <AdminField
                     label="الوصف (إنجليزي)"
                     multiline
                     rows={3}
@@ -485,42 +485,42 @@ function ContactForm() {
     <>
       <Card title="معلومات التواصل">
         <Grid>
-          <FormField
+          <AdminField
             label="الهاتف"
             value={v.phone}
             onChange={(x) => setV({ ...v, phone: x })}
             dir="ltr"
           />
-          <FormField
+          <AdminField
             label="واتساب"
             value={v.whatsapp}
             onChange={(x) => setV({ ...v, whatsapp: x })}
             dir="ltr"
           />
-          <FormField
+          <AdminField
             label="البريد"
             value={v.email}
             onChange={(x) => setV({ ...v, email: x })}
             dir="ltr"
           />
-          <FormField
+          <AdminField
             label="ساعات العمل (عربي)"
             value={v.hours_ar}
             onChange={(x) => setV({ ...v, hours_ar: x })}
           />
-          <FormField
+          <AdminField
             label="ساعات العمل (إنجليزي)"
             value={v.hours_en}
             onChange={(x) => setV({ ...v, hours_en: x })}
             dir="ltr"
           />
           <div />
-          <FormField
+          <AdminField
             label="العنوان (عربي)"
             value={v.address_ar}
             onChange={(x) => setV({ ...v, address_ar: x })}
           />
-          <FormField
+          <AdminField
             label="العنوان (إنجليزي)"
             value={v.address_en}
             onChange={(x) => setV({ ...v, address_en: x })}
@@ -530,25 +530,25 @@ function ContactForm() {
       </Card>
       <Card title="وسائل التواصل الاجتماعي">
         <Grid>
-          <FormField
+          <AdminField
             label="Instagram URL"
             value={v.instagram}
             onChange={(x) => setV({ ...v, instagram: x })}
             dir="ltr"
           />
-          <FormField
+          <AdminField
             label="Facebook URL"
             value={v.facebook}
             onChange={(x) => setV({ ...v, facebook: x })}
             dir="ltr"
           />
-          <FormField
+          <AdminField
             label="Twitter / X URL"
             value={v.twitter}
             onChange={(x) => setV({ ...v, twitter: x })}
             dir="ltr"
           />
-          <FormField
+          <AdminField
             label="LinkedIn URL"
             value={v.linkedin}
             onChange={(x) => setV({ ...v, linkedin: x })}

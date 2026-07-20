@@ -1,5 +1,7 @@
-import { FormField } from "@/components/FormField";
+import { AdminField } from "@/components/admin/AdminField";
 import { PageHeaderAction } from "@/components/admin/PageHeaderAction";
+import { cn } from "@/lib/utils";
+import { adminControl } from "@/components/admin/field-styles";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -192,7 +194,7 @@ function ServicesAdmin() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="ابحث في الخدمات…"
-            className="w-full h-9 rtl:pr-9 rtl:pl-8 ltr:pl-9 ltr:pr-8 rounded-lg border border-border bg-white text-xs focus:border-teal focus:ring-2 focus:ring-teal/20 outline-none"
+            className={cn(adminControl, "w-full rtl:pr-9 rtl:pl-8 ltr:pl-9 ltr:pr-8")}
           />
           {search && (
             <button
@@ -313,13 +315,13 @@ function ServicesAdmin() {
             className="space-y-4"
           >
             <div className="grid grid-cols-2 gap-4">
-              <FormField
+              <AdminField
                 label="العنوان (عربي)"
                 value={form.title_ar}
                 onChange={(v) => setForm({ ...form, title_ar: v })}
                 required
               />
-              <FormField
+              <AdminField
                 label="العنوان (إنجليزي)"
                 value={form.title_en}
                 onChange={(v) => setForm({ ...form, title_en: v })}
@@ -362,14 +364,14 @@ function ServicesAdmin() {
               )}
             </div>
             <div className="grid grid-cols-3 gap-4">
-              <FormField
+              <AdminField
                 label="الأيقونة"
                 select
                 options={ICONS.map((i) => ({ value: i, label: i }))}
                 value={form.icon}
                 onChange={(v) => setForm({ ...form, icon: v })}
               />
-              <FormField
+              <AdminField
                 type="number"
                 label="الترتيب"
                 value={String(form.sort_order)}

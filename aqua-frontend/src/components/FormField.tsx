@@ -2,15 +2,61 @@ import * as React from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// `size` is omitted because the native input attribute of that name is a
+// number (character width) and this component's `size` is a presentation
+// scale. Nothing here uses the native one.
 type SharedFieldProps = Omit<
   React.InputHTMLAttributes<HTMLInputElement>,
-  "value" | "onChange" | "type"
+  "value" | "onChange" | "type" | "size"
 >;
 
 export interface FormFieldOption {
   value: string;
   label: string;
 }
+
+/**
+ * `lg` is the public site's marketing presentation — large, bold, generous.
+ * `sm` is for the admin dashboard, where one dialog shows a dozen fields at
+ * once and density matters more than presence. It also matches the height
+ * and type scale of the admin's other controls (search, filters, the
+ * specifications editor), which `lg` was close to double.
+ */
+export type FormFieldSize = "lg" | "sm";
+
+// Every class is written out in full — Tailwind extracts class names
+// statically, so an interpolated `peer-focus:${...}` would silently produce
+// no CSS at all.
+const SIZES: Record<
+  FormFieldSize,
+  {
+    wrapper: string;
+    field: string;
+    label: string;
+    labelFloated: string;
+    labelFocused: string;
+    multilineTop: string;
+  }
+> = {
+  lg: {
+    wrapper: "px-5 py-[18px]",
+    field: "text-[22px] font-bold",
+    label: "text-base font-normal",
+    labelFloated: "text-sm font-medium",
+    labelFocused: "peer-focus:text-sm peer-focus:font-medium",
+    // Roughly one line-height below the top padding, so the label sits on
+    // the textarea's first line rather than floating above it.
+    multilineTop: "top-[30px]",
+  },
+  sm: {
+    wrapper: "px-4 py-2.5",
+    field: "text-sm font-semibold",
+    label: "text-sm font-normal",
+    labelFloated: "text-xs font-medium",
+    labelFocused: "peer-focus:text-xs peer-focus:font-medium",
+    multilineTop: "top-[21px]",
+  },
+};
 
 export interface FormFieldProps extends SharedFieldProps {
   label: string;
@@ -28,6 +74,8 @@ export interface FormFieldProps extends SharedFieldProps {
   select?: boolean;
   /** Options for the select. Only used when `select` is true. */
   options?: FormFieldOption[];
+  /** Presentation scale. Defaults to `lg` (the public site). */
+  size?: FormFieldSize;
 }
 
 /**
@@ -77,12 +125,14 @@ export const FormField = React.forwardRef<
       rows = 4,
       select = false,
       options = [],
+      size = "lg",
       className,
       id,
       ...rest
     },
     ref,
   ) => {
+    const scale = SIZES[size];
     const autoId = React.useId();
     const inputId = id ?? autoId;
     // Coerce null/undefined to "" so the field stays a controlled component
@@ -90,13 +140,16 @@ export const FormField = React.forwardRef<
     const fieldValue = value ?? "";
     const floated = fieldValue.length > 0;
 
-    const fieldClassName =
-      "peer w-full border-0 bg-transparent text-[22px] font-bold text-[#1C1C1E] outline-none focus:outline-none focus:ring-0";
+    const fieldClassName = cn(
+      "peer w-full border-0 bg-transparent text-[#1C1C1E] outline-none focus:outline-none focus:ring-0",
+      scale.field,
+    );
 
     return (
       <div
         className={cn(
-          "relative rounded-xl bg-white px-5 py-[18px]",
+          "relative rounded-xl bg-white",
+          scale.wrapper,
           "shadow-[inset_0_0_0_1px_#D1D1D6] transition-shadow duration-150 ease-out",
           "focus-within:shadow-[inset_0_0_0_2px_#1C1C1E]",
           className,
@@ -155,12 +208,11 @@ export const FormField = React.forwardRef<
           className={cn(
             "pointer-events-none absolute start-4 -translate-y-1/2 bg-white px-1.5",
             "transition-all duration-150 ease-out",
-            "peer-focus:top-0 peer-focus:text-sm peer-focus:font-medium peer-focus:text-[#1C1C1E]",
+            "peer-focus:top-0 peer-focus:text-[#1C1C1E]",
+            scale.labelFocused,
             floated
-              ? "top-0 text-sm font-medium text-[#6E6E73]"
-              : multiline
-                ? "top-[30px] text-base font-normal text-[#6E6E73]"
-                : "top-1/2 text-base font-normal text-[#6E6E73]",
+              ? cn("top-0 text-[#6E6E73]", scale.labelFloated)
+              : cn("text-[#6E6E73]", scale.label, multiline ? scale.multilineTop : "top-1/2"),
           )}
         >
           {label}

@@ -1,4 +1,4 @@
-import { FormField } from "@/components/FormField";
+import { AdminField } from "@/components/admin/AdminField";
 import { PageHeaderAction } from "@/components/admin/PageHeaderAction";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
@@ -375,7 +375,7 @@ function CategoriesAdmin() {
             }}
             className="space-y-4"
           >
-            <FormField
+            <AdminField
               label="عنوان التصنيف"
               value={name}
               onChange={setName}
@@ -387,7 +387,7 @@ function CategoriesAdmin() {
             {/* Kind selector — only when creating a root category */}
             {!editing && !formParent && (
               <div>
-                <FormField
+                <AdminField
                   label="نوع التصنيف"
                   select
                   options={[

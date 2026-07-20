@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronUp, GripVertical, Plus, Trash2 } from "lucide-react";
 import type { DbSpecificationField, DbSpecificationGroup } from "@/lib/admin-api";
+import { adminInput } from "@/components/admin/field-styles";
 
 const MAX_GROUPS = 20;
 const MAX_FIELDS = 50;
@@ -210,7 +211,7 @@ function TextInput({
       value={value}
       placeholder={placeholder}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full min-w-0 px-3 py-2 rounded-lg border border-border bg-white text-xs focus:border-teal focus:ring-2 focus:ring-teal/20 outline-none"
+      className={adminInput}
     />
   );
 }

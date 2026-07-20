@@ -24,7 +24,7 @@ import { me, type AppRole } from "@/lib/auth";
 import { ApiError } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { FormField } from "@/components/FormField";
+import { AdminField } from "@/components/admin/AdminField";
 import {
   Select,
   SelectContent,
@@ -280,7 +280,7 @@ function UsersPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <FormField
+            <AdminField
               label="البريد الإلكتروني"
               type="email"
               value={email}
@@ -288,7 +288,7 @@ function UsersPage() {
               placeholder="name@example.com"
               dir="ltr"
             />
-            <FormField
+            <AdminField
               label="كلمة المرور"
               type="password"
               value={password}
@@ -336,7 +336,7 @@ function UsersPage() {
               المستخدم: <span className="font-semibold">{resetTarget?.email}</span>
             </DialogDescription>
           </DialogHeader>
-          <FormField
+          <AdminField
             label="كلمة المرور الجديدة"
             type="password"
             value={newPassword}
