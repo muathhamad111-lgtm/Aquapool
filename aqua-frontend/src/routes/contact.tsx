@@ -14,10 +14,12 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
-import { PageHero } from "@/components/Section";
+import { PageHero, SectionHeader } from "@/components/Section";
 import { FormField } from "@/components/FormField";
 import { ApiError } from "@/lib/api-client";
 import { pick } from "@/lib/content";
+import { branchAddress, branchMapsUrl, usePublicBranches } from "@/lib/branches-api";
+import type { DbBranch } from "@/lib/admin-api";
 import { useSiteSetting } from "@/lib/settings-api";
 import { useSubmitMessage } from "@/lib/messages-api";
 import { useReveal } from "@/lib/motion";
@@ -61,10 +63,21 @@ export const Route = createFileRoute("/contact")({
 function ContactPage() {
   const { t, lang } = useLang();
   const contact = useSiteSetting<ContactSetting>("contact");
-  const address = pick(contact?.address_ar, contact?.address_en, lang) || t.contact.address;
-  const hours = pick(contact?.hours_ar, contact?.hours_en, lang) || t.contact.hours;
-  const email = contact?.email || "info@aqua-pool-group.com";
-  const phone = contact?.phone || "+966 500 000 000";
+  const { data: branches = [] } = usePublicBranches();
+
+  // The info cards describe one location, so they show the primary branch —
+  // the first in sort order. The site setting is the fallback for the
+  // window before any branch exists.
+  const primary = branches[0];
+  const address = primary
+    ? branchAddress(primary, lang)
+    : pick(contact?.address_ar, contact?.address_en, lang) || t.contact.address;
+  const hours =
+    (primary && pick(primary.hours_ar, primary.hours_en, lang)) ||
+    pick(contact?.hours_ar, contact?.hours_en, lang) ||
+    t.contact.hours;
+  const email = primary?.email || contact?.email || "info@aqua-pool-group.com";
+  const phone = primary?.phone || contact?.phone || "+966 500 000 000";
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formName, setFormName] = useState("");
@@ -320,7 +333,94 @@ function ContactPage() {
           </div>
         </div>
       </section>
+
+      {/* Only rendered once there is more than one location. With a single
+          branch the info cards above already say everything, and a section
+          repeating them would be noise. */}
+      {branches.length > 1 && (
+        <section className="pb-14 sm:pb-20 lg:pb-28">
+          <div className="container-x">
+            {/* No eyebrow: it renders directly above the title, and
+                repeating the same words twice reads as a mistake. */}
+            <SectionHeader title={t.contact.branchesTitle} subtitle={t.contact.branchesSub} />
+            <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+              {branches.map((branch) => (
+                <BranchCard key={branch.id} branch={branch} lang={lang} t={t} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </>
+  );
+}
+
+function BranchCard({
+  branch,
+  lang,
+  t,
+}: {
+  branch: DbBranch;
+  lang: "ar" | "en";
+  t: ReturnType<typeof useLang>["t"];
+}) {
+  const address = branchAddress(branch, lang);
+  const hours = pick(branch.hours_ar, branch.hours_en, lang);
+  const mapsUrl = branchMapsUrl(branch);
+
+  return (
+    <div className="bg-white rounded-2xl border border-border p-5 flex flex-col hover:border-teal/40 hover:shadow-md transition-[border-color,box-shadow] duration-150">
+      <h3 className="font-bold text-deep mb-3">{pick(branch.name_ar, branch.name_en, lang)}</h3>
+
+      <ul className="space-y-2.5 text-sm text-muted-foreground flex-1">
+        {address && (
+          <li className="flex items-start gap-2.5">
+            <MapPin className="size-4 shrink-0 mt-0.5 text-teal" />
+            <span className="leading-snug">{address}</span>
+          </li>
+        )}
+        {branch.phone && (
+          <li className="flex items-center gap-2.5">
+            <Phone className="size-4 shrink-0 text-teal" />
+            {/* tel: strips spaces — dialers reject them in the href even
+                though they're wanted in the visible number. */}
+            <a
+              href={`tel:${branch.phone.replace(/\s/g, "")}`}
+              dir="ltr"
+              className="hover:text-deep"
+            >
+              {branch.phone}
+            </a>
+          </li>
+        )}
+        {branch.email && (
+          <li className="flex items-center gap-2.5 min-w-0">
+            <Mail className="size-4 shrink-0 text-teal" />
+            <a href={`mailto:${branch.email}`} dir="ltr" className="hover:text-deep truncate">
+              {branch.email}
+            </a>
+          </li>
+        )}
+        {hours && (
+          <li className="flex items-start gap-2.5">
+            <Clock className="size-4 shrink-0 mt-0.5 text-teal" />
+            <span className="leading-snug">{hours}</span>
+          </li>
+        )}
+      </ul>
+
+      {mapsUrl && (
+        <a
+          href={mapsUrl}
+          target="_blank"
+          rel="noreferrer noopener"
+          className="mt-4 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-border text-xs font-bold text-deep hover:bg-muted transition-colors"
+        >
+          <MapPin className="size-3.5" />
+          {t.contact.directions}
+        </a>
+      )}
+    </div>
   );
 }
 

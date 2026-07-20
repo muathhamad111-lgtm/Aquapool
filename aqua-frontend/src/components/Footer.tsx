@@ -3,6 +3,7 @@ import { Instagram, Linkedin, Twitter, Mail, MapPin, Phone } from "lucide-react"
 import { useLang } from "@/i18n/LanguageContext";
 import { pick } from "@/lib/content";
 import { useSiteSetting } from "@/lib/settings-api";
+import { branchAddress, usePublicBranches } from "@/lib/branches-api";
 import logoWhite from "@/assets/logo/logo-white.svg";
 
 type ContactSetting = {
@@ -19,9 +20,18 @@ type ContactSetting = {
 export function Footer() {
   const { t, lang } = useLang();
   const contact = useSiteSetting<ContactSetting>("contact");
-  const address = pick(contact?.address_ar, contact?.address_en, lang) || t.contact.address;
-  const email = contact?.email || "info@aqua-pool-group.com";
-  const phone = contact?.phone || "+966 500 000 000";
+  const { data: branches = [] } = usePublicBranches();
+
+  // The footer has room for one location, so it shows the primary branch —
+  // the first in sort order; every branch is listed on the contact page.
+  // The site setting stays as the fallback for the window before any
+  // branch exists.
+  const primary = branches[0];
+  const address = primary
+    ? branchAddress(primary, lang)
+    : pick(contact?.address_ar, contact?.address_en, lang) || t.contact.address;
+  const email = primary?.email || contact?.email || "info@aqua-pool-group.com";
+  const phone = primary?.phone || contact?.phone || "+966 500 000 000";
 
   return (
     <footer className="bg-deep text-white/85 mt-16 sm:mt-20 relative overflow-hidden">

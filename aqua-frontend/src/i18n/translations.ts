@@ -232,6 +232,9 @@ export const translations = {
       emailLabel: "البريد",
       phoneLabel: "الهاتف",
       hoursLabel: "ساعات العمل",
+      branchesTitle: "فروعنا",
+      branchesSub: "تفضّل بزيارتنا في أقرب فرع إليك",
+      directions: "الاتجاهات",
       hours: "السبت - الخميس: 8 صباحاً - 8 مساءً",
       whyTitle: "لماذا تختار أكوا بول؟",
       why: [
@@ -498,6 +501,9 @@ export const translations = {
       emailLabel: "Email",
       phoneLabel: "Phone",
       hoursLabel: "Working Hours",
+      branchesTitle: "Our Branches",
+      branchesSub: "Visit us at the location nearest to you",
+      directions: "Directions",
       hours: "Sat – Thu: 8 AM – 8 PM",
       whyTitle: "Why Aqua Pool?",
       why: [

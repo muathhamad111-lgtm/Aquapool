@@ -78,6 +78,33 @@ export type DbProductDetail = DbProduct & {
 
 export type CategoryKind = "product" | "service" | "project";
 
+/**
+ * A physical location. Only the name is guaranteed — every address part,
+ * the contact details and the hours are optional, so anything rendering a
+ * branch has to tolerate nulls.
+ */
+export type DbBranch = {
+  id: string;
+  name_ar: string;
+  name_en: string;
+  country_ar: string | null;
+  country_en: string | null;
+  region_ar: string | null;
+  region_en: string | null;
+  district_ar: string | null;
+  district_en: string | null;
+  street_ar: string | null;
+  street_en: string | null;
+  email: string | null;
+  phone: string | null;
+  hours_ar: string | null;
+  hours_en: string | null;
+  sort_order: number;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
 export type DbProductCategory = {
   id: string;
   parent_id: string | null;
