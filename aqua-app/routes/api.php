@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AuditLogController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\BranchController;
 use App\Http\Controllers\Api\V1\HealthController;
 use App\Http\Controllers\Api\V1\ImageUploadController;
 use App\Http\Controllers\Api\V1\MessageController;
@@ -29,6 +30,9 @@ Route::prefix('v1')->group(function () {
     // Public — no auth. Always filtered to published categories only;
     // the admin (unfiltered, all-kinds) list lives under /admin below.
     Route::get('/product-categories', [ProductCategoryController::class, 'publicIndex']);
+
+    // Public — no auth. Always filtered to published branches only.
+    Route::get('/branches', [BranchController::class, 'publicIndex']);
 
     // Public — no auth. Always filtered to published services only.
     Route::get('/services', [ServiceController::class, 'publicIndex']);
@@ -74,6 +78,11 @@ Route::prefix('v1')->group(function () {
             Route::post('/product-categories', [ProductCategoryController::class, 'store']);
             Route::patch('/product-categories/{productCategory}', [ProductCategoryController::class, 'update']);
             Route::delete('/product-categories/{productCategory}', [ProductCategoryController::class, 'destroy']);
+
+            Route::get('/branches', [BranchController::class, 'index']);
+            Route::post('/branches', [BranchController::class, 'store']);
+            Route::patch('/branches/{branch}', [BranchController::class, 'update']);
+            Route::delete('/branches/{branch}', [BranchController::class, 'destroy']);
 
             Route::get('/services', [ServiceController::class, 'index']);
             Route::post('/services', [ServiceController::class, 'store']);
