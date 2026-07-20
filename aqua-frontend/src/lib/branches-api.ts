@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useLoaderData } from "@tanstack/react-router";
 import { apiClient } from "@/lib/api-client";
 import type { DbBranch } from "@/lib/admin-api";
 import { pick } from "@/lib/content";
@@ -12,10 +13,16 @@ const ADMIN_QUERY_KEY = ["admin", "branches"];
  * for a single location.
  */
 export function usePublicBranches() {
+  // Seeded from the root loader, which fetches this on the server — the
+  // footer renders on every page and would otherwise ship its hardcoded
+  // fallback contact details in the server-rendered HTML.
+  const { branches } = useLoaderData({ from: "__root__" });
+
   return useQuery({
     queryKey: PUBLIC_QUERY_KEY,
     queryFn: () => apiClient.get<DbBranch[]>("/api/v1/branches"),
     staleTime: 60_000,
+    initialData: branches ?? undefined,
   });
 }
 

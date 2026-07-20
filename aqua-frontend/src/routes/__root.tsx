@@ -11,6 +11,9 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
+import { apiClient } from "@/lib/api-client";
+import type { SiteSettingsMap } from "@/lib/settings-api";
+import type { DbBranch } from "@/lib/admin-api";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { LanguageProvider } from "@/i18n/LanguageContext";
 import { Navbar } from "@/components/Navbar";
@@ -81,7 +84,36 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
+/**
+ * Site-wide data every page's chrome needs, fetched on the server.
+ *
+ * The footer renders on every page and reads the contact details and the
+ * primary branch. As client-only queries those were unresolved during SSR,
+ * so the server-rendered HTML carried the hardcoded placeholders — a fake
+ * `+966 500 000 000` went out to every crawler and link preview, and users
+ * saw it flash before hydration replaced it.
+ *
+ * Loader data (not a prefetched query cache) because this router has no
+ * react-query SSR integration: seeding the cache server-side would render
+ * real data on the server and placeholders on the client's first paint,
+ * which is a hydration mismatch — worse than the bug. `useSiteSettings` and
+ * `usePublicBranches` read this as `initialData`, so every existing call
+ * site benefits without changing.
+ */
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  loader: async () => {
+    // Never throws: the chrome must render even if the API is down, and a
+    // rejected root loader would take every page down with it. Callers fall
+    // back to their own defaults when a value is null.
+    const settle = async <T,>(request: Promise<T>): Promise<T | null> => request.catch(() => null);
+
+    const [settings, branches] = await Promise.all([
+      settle(apiClient.get<SiteSettingsMap>("/api/v1/settings")),
+      settle(apiClient.get<DbBranch[]>("/api/v1/branches")),
+    ]);
+
+    return { settings, branches };
+  },
   head: () => ({
     meta: [
       { charSet: "utf-8" },
