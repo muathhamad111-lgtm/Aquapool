@@ -1,7 +1,8 @@
 # Aqua — Architecture
 
-Last updated: 2026-07-19. This document is the source of truth for the
-project's architecture. The Git repository is authoritative.
+Last updated: 2026-07-22. This document is the source of truth for the
+project's architecture. The Git repository is authoritative. Dated notes on
+individual changes live in [`docs/work-log.md`](work-log.md).
 
 > **Status: migration complete.** The project began as a Lovable-generated app
 > with Supabase as its entire backend. It has been fully migrated to a
@@ -42,6 +43,29 @@ aquapool/
   Lovable build integration were removed, and the Vite config is standard and
   self-contained. `src/lib/lovable-error-reporting.ts` remains as the error
   boundary's reporter — it is plain local code with no Lovable dependency.
+
+### Presentation layer (public site)
+
+Three constraints that are easy to break without knowing them:
+
+- **Two palettes coexist, on purpose.** The Ocean Deep tokens (`--deep`,
+  `--ocean`, `--teal`, `--mint`, `--sand`) drive every light page.
+  "Night Aqua" (`--night`, `--night-2`, `--aqua`, `--aqua-2`, `--foam`) drives
+  the dark homepage and the footer, and `--paper`/`--cream`/`--lagoon` are the
+  About page's warm surfaces. All are declared in `src/styles.css`.
+- **The navbar is `fixed`, so pages own their top padding.** It is a floating
+  pill with transparent space around it; page content is meant to run beneath
+  it to the top edge. Any new route's first section must carry enough top
+  padding to clear it — `PageHero` does this for the pages that use it.
+- **Entrance animations must never be able to hide content.** `useReveal` in
+  `src/lib/motion.ts` reveals once and stays revealed, and re-measures
+  ScrollTrigger whenever the document changes height. Both exist because
+  client-side data loading grows the page after triggers are measured; see the
+  2026-07-22 entry in [`work-log.md`](work-log.md) for the failure this caused.
+- **Mixed-direction strings need `dir="auto"`.** In an RTL document a string
+  like `01 — Services` renders as `SERVICES — 01`, because the leading digits
+  are weakly-directional. This applies to any label that mixes scripts,
+  numbers, or punctuation with Arabic.
 
 ## Current stack (aqua-app)
 

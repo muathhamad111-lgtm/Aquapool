@@ -128,6 +128,11 @@ omitting it.
   cleanup.
 - **Never modify unrelated files.** A feature touching `products` doesn't
   also touch `projects` files "while we're in there."
+- **Respect the presentation-layer constraints.** The public site has a few
+  that are easy to break blind — two coexisting palettes, a fixed navbar whose
+  clearance each page owns, and the RTL/motion rules. They are documented once,
+  in `docs/architecture.md` under "Presentation layer"; read them before
+  changing shared chrome or adding a public route.
 - **Explain the implementation plan before writing code.** For every new
   feature or module, walk through which of the 12 layers are involved and
   what each will do, and get that confirmed before implementation starts —
