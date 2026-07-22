@@ -64,7 +64,7 @@ function ProductNotFound() {
   const { lang } = useLang();
 
   return (
-    <div className="container-x py-24 text-center">
+    <div className="container-x pb-24 pt-32 text-center">
       <ImageOff className="size-10 mx-auto mb-4 text-muted-foreground/40" />
       <h1 className="text-xl font-bold text-deep mb-2">
         {lang === "ar" ? "المنتج غير موجود" : "Product not found"}
@@ -94,8 +94,9 @@ function ProductDetailPage() {
   const priceLabel = pick(product.price_label_ar, product.price_label_en, lang);
   const category = categories.find((c) => c.id === product.category_id);
 
+  // pt clears the fixed floating navbar (see components/Navbar.tsx).
   return (
-    <div className="py-10 sm:py-14 lg:py-20">
+    <div className="pb-10 pt-28 sm:pb-14 sm:pt-32 lg:pb-20">
       <div className="container-x">
         <nav className="mb-6 text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
           <Link to="/products" className="hover:text-deep font-semibold">

@@ -25,7 +25,14 @@ const CHANNELS = [
  * leaves no dead icon behind. Facebook and WhatsApp were editable in the
  * admin but had no icon anywhere on the site until now.
  */
-export function SocialLinks({ className = "" }: { className?: string }) {
+export function SocialLinks({
+  className = "",
+  /** "inline" — bare icons in a row. "tile" — the footer's rounded glass squares. */
+  variant = "inline",
+}: {
+  className?: string;
+  variant?: "inline" | "tile";
+}) {
   const contact = useSiteSetting<ContactSetting>("contact");
 
   const links = CHANNELS.map((channel) => ({
@@ -35,8 +42,10 @@ export function SocialLinks({ className = "" }: { className?: string }) {
 
   if (links.length === 0) return null;
 
+  const tile = variant === "tile";
+
   return (
-    <div className={`flex items-center gap-4 ${className}`}>
+    <div className={`flex items-center ${tile ? "flex-wrap gap-3" : "gap-4"} ${className}`}>
       {links.map(({ key, icon: Icon, label, href }) => (
         <a
           key={key}
@@ -44,9 +53,13 @@ export function SocialLinks({ className = "" }: { className?: string }) {
           target="_blank"
           rel="noopener noreferrer"
           aria-label={label}
-          className="transition-colors hover:text-mint"
+          className={
+            tile
+              ? "grid size-10.5 place-items-center rounded-xl border border-white/10 bg-white/[0.06] text-foam transition-colors hover:border-aqua/40 hover:bg-aqua/15 hover:text-aqua"
+              : "transition-colors hover:text-mint"
+          }
         >
-          <Icon className="size-4" />
+          <Icon className={tile ? "size-4.5" : "size-4"} />
         </a>
       ))}
     </div>

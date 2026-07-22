@@ -21,7 +21,18 @@ export const translations = {
       desc: "نقدم حلولاً متكاملة لتصميم وتنفيذ وصيانة المسابح بأحدث التقنيات العالمية وأجود مواد التشطيب التي تضمن الجمال والاستدامة.",
       cta1: "تصفح مشاريعنا",
       cta2: "كتالوج المنتجات",
+      discover: "مرر للأسفل",
       statBadge: "مشروع تم تسليمه",
+      aboutLabel: "من نحن",
+      aboutTitle: "ثلاثة عقود من الإتقان تحت سطح الماء",
+      aboutP1:
+        "تأسست شركة أكوا بول عام 1995 في مدينة نابلس، فلسطين، تحت اسم «الأمير للتركيبات الصحية وحمامات السباحة». ومع تطوّر رؤيتنا وخبرتنا، تحوّل الاسم إلى «أكوا بول» عام 2023.",
+      aboutP2:
+        "نُعدّ اليوم واحدة من الشركات الرائدة في التركيبات الصحية وتشطيبات حمامات السباحة والإكسسوارات، ونقدّم كل ما تحتاجه لتحويل أحلامك إلى واقع مليء بالجمال والرفاهية.",
+      statYears: "عاماً من الخبرة",
+      statRating: "تقييم العملاء",
+      statProjects: "مشروع منجز",
+      statProducts: "منتج متوفر",
       statsTitle: "أرقام تتحدث عن جودتنا",
       stats: [
         { v: "+150", l: "مشروع منفذ" },
@@ -183,7 +194,10 @@ export const translations = {
         { t: "رضا العميل", d: "نجاحنا الحقيقي يقاس بابتسامة عملائنا ورضاهم الدائم." },
         { t: "الالتزام", d: "نسلم في الوقت المتفق عليه وفي حدود الميزانية المعتمدة." },
       ],
-      bandTitle: "ثقة نبنيها منذ أكثر من 12 عامًا",
+      // {years} is filled in from the founding year — see lib/company.ts.
+      bandTitle: "ثقة نبنيها منذ أكثر من {years} عامًا",
+      bandCta: "ابدأ مشروعك معنا",
+      promise: "وعدنا",
       bandDesc:
         "كل مسبح ننفّذه هو امتداد لهذه الثقة — التزام بالجودة، دقة في التفاصيل، وشغف لا يتغيّر مهما تغيّرت المشاريع.",
     },
@@ -249,6 +263,7 @@ export const translations = {
         "نحن في أكوا بول جروب نلتزم بتقديم أرقى مستويات الجودة في تشطيب وصيانة المسابح، مع التركيز على الابتكار ورضا العميل.",
       links: "روابط سريعة",
       contact: "تواصل معنا",
+      follow: "تابعنا",
       rights: "جميع الحقوق محفوظة",
     },
   },
@@ -270,7 +285,18 @@ export const translations = {
       desc: "We deliver end-to-end pool design, construction, and maintenance using the latest global technology and the finest finishing materials — guaranteeing beauty that lasts.",
       cta1: "Browse Projects",
       cta2: "Product Catalog",
+      discover: "Scroll down",
       statBadge: "Projects delivered",
+      aboutLabel: "About us",
+      aboutTitle: "Three decades of mastery beneath the surface",
+      aboutP1:
+        'Aqua Pool was founded in 1995 in Nablus, Palestine, under the name "Al-Amir Sanitary Installations & Swimming Pools". As our vision and expertise grew, the name changed to "Aqua Pool" in 2023.',
+      aboutP2:
+        "Today we are among the leading companies in sanitary installations, pool finishing and accessories — offering everything you need to turn your dreams into a reality full of beauty and luxury.",
+      statYears: "Years of experience",
+      statRating: "Client rating",
+      statProjects: "Projects delivered",
+      statProducts: "Products available",
       statsTitle: "Numbers that speak for our quality",
       stats: [
         { v: "150+", l: "Projects Completed" },
@@ -451,7 +477,10 @@ export const translations = {
         },
         { t: "Commitment", d: "We deliver on time and within the agreed budget — every time." },
       ],
-      bandTitle: "Trust we've built for over a decade",
+      // {years} is filled in from the founding year — see lib/company.ts.
+      bandTitle: "Trust we've built over {years} years",
+      bandCta: "Start your project with us",
+      promise: "Our promise",
       bandDesc:
         "Every pool we deliver is an extension of that trust — a commitment to quality, precision in every detail, and a passion that never changes, project after project.",
     },
@@ -518,6 +547,7 @@ export const translations = {
         "At Aqua Pool Group we deliver the finest standards in pool finishing and maintenance, with a focus on innovation and client satisfaction.",
       links: "Quick Links",
       contact: "Contact Us",
+      follow: "Follow Us",
       rights: "All rights reserved",
     },
   },

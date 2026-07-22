@@ -16,7 +16,10 @@ export function SectionHeader({
       {eyebrow && (
         <div className="flex items-center gap-3 mb-4">
           {center && <span className="hidden md:block h-px w-10 bg-teal" />}
-          <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.25em] uppercase text-teal">
+          <span
+            dir="auto"
+            className="text-[10px] sm:text-[11px] font-bold tracking-[0.25em] uppercase text-teal"
+          >
             {eyebrow}
           </span>
           <span className="h-px flex-1 bg-border" />
@@ -68,11 +71,16 @@ export function PageHero({
           backgroundSize: "64px 64px",
         }}
       />
-      <div className="container-x relative py-14 sm:py-20 md:py-28">
+      {/* pt clears the fixed floating navbar (see components/Navbar.tsx) while
+          the hero's own background still runs to the top edge behind it. */}
+      <div className="container-x relative pb-14 pt-28 sm:pb-20 sm:pt-32 md:pb-28 md:pt-36">
         {eyebrow && (
           <div className="flex items-center gap-3 mb-5 md:mb-6">
             <span className="size-1.5 rounded-full bg-mint" />
-            <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.3em] uppercase text-mint">
+            <span
+              dir="auto"
+              className="text-[10px] sm:text-[11px] font-bold tracking-[0.3em] uppercase text-mint"
+            >
               {eyebrow}
             </span>
           </div>

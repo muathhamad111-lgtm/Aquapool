@@ -38,6 +38,16 @@
   --color-sand: var(--sand);
   --color-surface: var(--surface);
 
+  --color-paper: var(--paper);
+  --color-cream: var(--cream);
+  --color-lagoon: var(--lagoon);
+
+  --color-night: var(--night);
+  --color-night-2: var(--night-2);
+  --color-aqua: var(--aqua);
+  --color-aqua-2: var(--aqua-2);
+  --color-foam: var(--foam);
+
   --font-sans: "Epilogue", "Tajawal", system-ui, sans-serif;
   --font-display: "Urbanist", "Tajawal", system-ui, sans-serif;
 }
@@ -52,6 +62,23 @@
   --mint: oklch(0.78 0.08 200); /* #5cbdb9 mint */
   --sand: oklch(0.96 0.012 240); /* soft cool sand */
   --surface: oklch(0.985 0.005 240);
+
+  /* Warm editorial surfaces for the About page. The Ocean Deep tokens above
+     are cool-neutral; these are the paper/cream tones the layout is set on,
+     which give the white cards something to sit against. */
+  --paper: #fbfaf7;
+  --cream: #f4efe7;
+  --lagoon: #eaf6f4;
+
+  /* "Night Aqua" — the immersive dark palette the homepage is built on.
+     Deliberately separate from the Ocean Deep tokens above: those drive the
+     light chrome every other page uses, and the homepage sits on top of a
+     photograph where the navy reads muddy. */
+  --night: #06272f;
+  --night-2: #083039;
+  --aqua: #6fe3c6;
+  --aqua-2: #b6f5e6;
+  --foam: #e8f4f0;
 
   --background: var(--surface);
   --foreground: var(--deep);
@@ -173,6 +200,68 @@
   border-radius: 9999px;
   font-weight: 700;
   transition: all 0.25s ease;
+}
+
+/* ── Night Aqua motion ──────────────────────────────────────────────────
+   Ambient, infinite decoration only (drifting glows, the scroll cue). Entrance
+   animation stays in GSAP (src/lib/motion.ts) where reduced-motion is already
+   handled; these are muted here instead. */
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}
+@keyframes scroll-dot {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(14px);
+    opacity: 0;
+  }
+}
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(111, 227, 198, 0.35);
+  }
+  70% {
+    box-shadow: 0 0 0 18px rgba(111, 227, 198, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(111, 227, 198, 0);
+  }
+}
+
+@utility animate-floaty {
+  animation: floaty 7s ease-in-out infinite;
+}
+@utility animate-scroll-dot {
+  animation: scroll-dot 1.7s ease-in-out infinite;
+}
+@utility animate-pulse-ring {
+  animation: pulse-ring 2.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-floaty,
+  .animate-scroll-dot,
+  .animate-pulse-ring {
+    animation: none;
+  }
+}
+
+/* Selection inside the dark homepage; the light chrome keeps the browser default. */
+.night-scope ::selection {
+  background: var(--aqua);
+  color: var(--night);
 }
 
 /* Rich text editor & rendered HTML content */

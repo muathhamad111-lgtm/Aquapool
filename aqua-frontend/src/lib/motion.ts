@@ -77,7 +77,14 @@ export function useReveal<T extends HTMLElement>(
  * JSX (the effect never runs), so the initial render must already show the
  * real final value.
  */
-export function useCountUp(value: number, format: (n: number) => string = (n) => String(n)) {
+export function useCountUp(
+  value: number,
+  format: (n: number) => string = (n) => String(n),
+  /** Fractional digits to keep while counting. 0 (the default) hands `format`
+      whole numbers, which is what a count of rows always wants; a rating like
+      4.9 needs 1 so it doesn't tick up as 5. */
+  decimals = 0,
+) {
   const ref = useRef<HTMLDivElement>(null);
   useGSAP(
     () => {
@@ -92,12 +99,14 @@ export function useCountUp(value: number, format: (n: number) => string = (n) =>
           ease: EASE,
           scrollTrigger: { trigger: el, start: "top 85%", once: true },
           onUpdate: () => {
-            el.textContent = format(Math.round(counter.n));
+            el.textContent = format(
+              decimals > 0 ? Number(counter.n.toFixed(decimals)) : Math.round(counter.n),
+            );
           },
         });
       });
     },
-    { scope: ref, dependencies: [value] },
+    { scope: ref, dependencies: [value, decimals] },
   );
   return ref;
 }
