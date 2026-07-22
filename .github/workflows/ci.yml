@@ -51,7 +51,7 @@ jobs:
       DB_PASSWORD: secret
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -61,7 +61,7 @@ jobs:
           coverage: none
 
       - name: Cache composer packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: aqua-app/vendor
           key: composer-${{ runner.os }}-${{ hashFiles('aqua-app/composer.lock') }}
@@ -89,7 +89,7 @@ jobs:
         working-directory: aqua-frontend
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: oven-sh/setup-bun@v2
         with:
