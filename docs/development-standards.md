@@ -137,6 +137,10 @@ omitting it.
   feature or module, walk through which of the 12 layers are involved and
   what each will do, and get that confirmed before implementation starts —
   same process used for Phase 1.
+- **The owner publishes and deploys, not the assistant.** An AI assistant must
+  never push to a remote, deploy, or touch the server/databases; it does the
+  local work and hands the remote step back. See `CLAUDE.md` for the full
+  boundary.
 
 ## Continuous integration
 

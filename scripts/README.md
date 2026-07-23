@@ -2,6 +2,10 @@
 
 Deployment and operational scripts.
 
+> **Who runs these:** the repo owner, on their own machine/server. AI assistants
+> must not deploy, push, or otherwise run these against the live environment —
+> see `CLAUDE.md`. The runbooks below are written for a human operator.
+
 - `backup-aqua-app-db.sh` — daily `pg_dump` of the `aqua_app` PostgreSQL
   database. Deployed to `/root/scripts/` on the production server, run via
   root's crontab at 03:15 daily, keeps the last 7 dumps locally under
