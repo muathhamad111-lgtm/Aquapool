@@ -8,6 +8,63 @@ Newest first.
 
 ---
 
+## 2026-07-23 — Database isolation and stability audit
+
+Read-only audit of the production database, prompted by the question of whether
+Aqua's data is genuinely independent of the ~12 other projects sharing the
+droplet. Summary is in `architecture.md` under "Database isolation"; this is the
+evidence and the two things that need a decision.
+
+**Isolation: strong.** Aqua is the only PostgreSQL tenant on the box — every
+other project runs on MySQL, so there is no shared server process, no shared
+credential, and no shared namespace. The cluster contains only `aqua_app`,
+`aqua_app_staging` and `postgres`. Each environment has its own owner role,
+neither a superuser nor able to create databases or roles. The server listens on
+`localhost` only, with `pg_hba.conf` limited to local peer and loopback over
+scram-sha-256 — it is not reachable from the network at all. Redis is running on
+the box but Aqua does not touch it (`SESSION_DRIVER=database`,
+`CACHE_STORE=database`, `QUEUE_CONNECTION=sync`).
+
+**Stability: no incidents.** System uptime 19 days. Zero OOM events in 30 days,
+zero unclean shutdowns, zero crash-recovery entries. Six connections against a
+limit of 100. The only two errors in the log across several days are
+application-level and harmless (a `varchar(255)` overflow, and a query against
+`branches` on staging before that table existed).
+
+PostgreSQL's own uptime was only 14 hours at audit time, which looked like an
+incident and was not: `unattended-upgrades` patched the Kerberos libraries
+(`libkrb5-3`, `libgssapi-krb5-2`) at 03:16 local, and PostgreSQL links against
+them, so the package manager restarted it. The log shows a clean _fast shutdown_
+followed immediately by "ready to accept connections".
+
+**Backups: healthy and verified restorable-looking.** Daily `pg_dump` at 03:15
+via root's crontab, last 7 retained, most recent from this morning. The latest
+dump passes `gunzip -t` and contains 18 `CREATE TABLE` statements and 18 `COPY`
+blocks — matching the 18 tables live, so it is a complete dump rather than a
+truncated one. Note this is only a _structural_ check; an actual restore into a
+scratch database has never been rehearsed.
+
+### Two open items
+
+1. **`PUBLIC` still holds the default `CONNECT`** on both databases, so the
+   staging role can open a connection to production. Exposure is limited — it
+   holds `SELECT` on 0 of 18 tables and `public` grants `USAGE` only — but the
+   grant has no reason to exist. Revoking is safe: owners and superusers are
+   unaffected, and the backup script connects as the owner (`aqua_app`).
+
+   ```sql
+   REVOKE CONNECT ON DATABASE aqua_app FROM PUBLIC;
+   REVOKE CONNECT ON DATABASE aqua_app_staging FROM PUBLIC;
+   ```
+
+2. **Memory is the real shared-resource risk, not the database.** 1.9 GB total
+   on a box running MySQL (148 MB), two Bun SSR processes (~170 MB) and several
+   PHP-FPM pools, with ~1.0 GB available and 860 MB of swap in use. No OOM has
+   occurred, but Aqua's isolation is logical, not physical: another project
+   exhausting memory would take PostgreSQL down with everything else.
+
+---
+
 ## 2026-07-23 — Blue heroes, and the clipped gradient headline
 
 Redesigned the hero on services / projects / products (breadcrumb, dot

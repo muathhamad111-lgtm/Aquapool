@@ -1,6 +1,6 @@
 # Aqua — Architecture
 
-Last updated: 2026-07-22. This document is the source of truth for the
+Last updated: 2026-07-23. This document is the source of truth for the
 project's architecture. The Git repository is authoritative. Dated notes on
 individual changes live in [`docs/work-log.md`](work-log.md).
 
@@ -46,13 +46,23 @@ aquapool/
 
 ### Presentation layer (public site)
 
-Three constraints that are easy to break without knowing them:
+Constraints that are easy to break without knowing them:
 
-- **Two palettes coexist, on purpose.** The Ocean Deep tokens (`--deep`,
-  `--ocean`, `--teal`, `--mint`, `--sand`) drive every light page.
-  "Night Aqua" (`--night`, `--night-2`, `--aqua`, `--aqua-2`, `--foam`) drives
-  the dark homepage and the footer, and `--paper`/`--cream`/`--lagoon` are the
-  About page's warm surfaces. All are declared in `src/styles.css`.
+- **One blue hue for the dark surfaces, four tokens that are easy to confuse.**
+  All declared in `src/styles.css`. `--deep` is the rich ocean blue used for
+  dark surfaces and headings. `--night`/`--night-2` follow it, two steps darker,
+  for the homepage and footer. `--chrome` is darker still and exists only for
+  the navbar pill, which floats over those heroes and dissolves into them at a
+  similar lightness. `--ink` is **not** `--deep`: body copy uses the same
+  lightness at a quarter of the saturation, because `--deep` reads as blue
+  across a hero and as a tint across a paragraph. `--aqua`/`--mint`/`--teal`
+  stay in the mint range — they are the brand accent and the only thing
+  carrying contrast on blue. `--paper`/`--cream`/`--lagoon` are the About
+  page's warm surfaces.
+- **Gradient text needs `inline-block` and vertical padding.** `bg-clip-text`
+  paints inside the element's own box, which on an `inline` span is only
+  font-size tall — Arabic ascenders and diacritics sit above it and simply are
+  not painted. See the 2026-07-23 entry in [`work-log.md`](work-log.md).
 - **The navbar is `fixed`, so pages own their top padding.** It is a floating
   pill with transparent space around it; page content is meant to run beneath
   it to the top edge. Any new route's first section must carry enough top
@@ -83,6 +93,30 @@ Three constraints that are easy to break without knowing them:
   user, never root.
 - Unbounded, append-only reads (`/admin/audit-logs`, `/admin/messages`) are
   paginated and filtered in SQL; see `docs/api-foundation.md`
+
+### Database isolation
+
+The droplet is shared with roughly a dozen unrelated projects, so this is worth
+stating explicitly (audited 2026-07-23 — see `work-log.md` for the evidence):
+
+- **Different engine.** Aqua is the only thing on PostgreSQL 16. Every other
+  project on the box (crossword, mydashboard, and the rest) runs on MySQL.
+  The two engines share nothing but the kernel.
+- **The PostgreSQL cluster holds only Aqua.** `aqua_app`, `aqua_app_staging`
+  and the built-in `postgres` database — nothing else.
+- **Dedicated non-privileged role per environment.** `aqua_app` owns
+  `aqua_app`; `aqua_app_staging` owns `aqua_app_staging`. Neither is a
+  superuser and neither may create databases or roles.
+- **Not reachable off-box.** `listen_addresses = localhost`, and `pg_hba.conf`
+  allows only local peer plus `127.0.0.1`/`::1` over scram-sha-256.
+- **Redis is running on the box but Aqua does not use it.** Sessions and cache
+  are on the `database` driver and the queue is `sync`, so there is no shared
+  cache namespace to collide with another project.
+
+One gap remains: `PUBLIC` still holds the default `CONNECT` on both databases,
+so the staging role can _open a connection_ to production. It can read nothing
+(0 of 18 tables grant it `SELECT`, and `public` schema gives `USAGE` only), but
+the grant is worth revoking.
 
 All data access goes through the Laravel REST API. React must never contain
 business logic.
