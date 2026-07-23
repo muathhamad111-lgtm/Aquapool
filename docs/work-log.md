@@ -46,16 +46,20 @@ scratch database has never been rehearsed.
 
 ### Two open items
 
-1. **`PUBLIC` still holds the default `CONNECT`** on both databases, so the
-   staging role can open a connection to production. Exposure is limited — it
-   holds `SELECT` on 0 of 18 tables and `public` grants `USAGE` only — but the
-   grant has no reason to exist. Revoking is safe: owners and superusers are
-   unaffected, and the backup script connects as the owner (`aqua_app`).
+1. **`PUBLIC` `CONNECT` — revoked the same day.** The default grant let the
+   staging role open a connection to production (it could read nothing behind
+   it, but the grant had no reason to exist). Both databases:
 
    ```sql
    REVOKE CONNECT ON DATABASE aqua_app FROM PUBLIC;
    REVOKE CONNECT ON DATABASE aqua_app_staging FROM PUBLIC;
    ```
+
+   Verified before/after: `has_database_privilege('aqua_app_staging',
+'aqua_app', 'CONNECT')` went `t` → `f`, each owner still connects to its own
+   database, and the live site/API stayed 200 with real data throughout. Not in
+   a migration — it is a one-time grant on databases the Laravel migrations do
+   not own, so it lives here in the runbook rather than in `aqua-app`.
 
 2. **Memory is the real shared-resource risk, not the database.** 1.9 GB total
    on a box running MySQL (148 MB), two Bun SSR processes (~170 MB) and several

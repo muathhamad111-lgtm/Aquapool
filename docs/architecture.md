@@ -112,11 +112,11 @@ stating explicitly (audited 2026-07-23 — see `work-log.md` for the evidence):
 - **Redis is running on the box but Aqua does not use it.** Sessions and cache
   are on the `database` driver and the queue is `sync`, so there is no shared
   cache namespace to collide with another project.
-
-One gap remains: `PUBLIC` still holds the default `CONNECT` on both databases,
-so the staging role can _open a connection_ to production. It can read nothing
-(0 of 18 tables grant it `SELECT`, and `public` schema gives `USAGE` only), but
-the grant is worth revoking.
+- **No cross-database connect.** The default `CONNECT` grant to `PUBLIC` was
+  revoked on both databases (2026-07-23), so the staging role can no longer
+  even open a connection to production, and vice versa. Each owner keeps
+  `CONNECT` on its own database. `PUBLIC` retains only the harmless `TEMP`
+  privilege, which is unusable without `CONNECT`.
 
 All data access goes through the Laravel REST API. React must never contain
 business logic.
