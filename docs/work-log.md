@@ -44,24 +44,24 @@ blocks — matching the 18 tables live, so it is a complete dump rather than a
 truncated one. Note this is only a _structural_ check; an actual restore into a
 scratch database has never been rehearsed.
 
-### Two open items
+### Follow-ups
 
-1. **`PUBLIC` `CONNECT` — revoked the same day.** The default grant let the
+1. **`PUBLIC` `CONNECT` — resolved the same day.** The default grant let the
    staging role open a connection to production (it could read nothing behind
-   it, but the grant had no reason to exist). Both databases:
+   it, but the grant had no reason to exist). Revoked on both databases:
 
    ```sql
    REVOKE CONNECT ON DATABASE aqua_app FROM PUBLIC;
    REVOKE CONNECT ON DATABASE aqua_app_staging FROM PUBLIC;
    ```
 
-   Verified before/after: `has_database_privilege('aqua_app_staging',
-'aqua_app', 'CONNECT')` went `t` → `f`, each owner still connects to its own
-   database, and the live site/API stayed 200 with real data throughout. Not in
-   a migration — it is a one-time grant on databases the Laravel migrations do
-   not own, so it lives here in the runbook rather than in `aqua-app`.
+   Verified before/after: `has_database_privilege('aqua_app_staging', 'aqua_app', 'CONNECT')`
+   went `t` → `f`, each owner still connects to its own database, and the live
+   site/API stayed 200 with real data throughout. Not in a migration — it is a
+   one-time grant on databases the Laravel migrations do not own, so it lives
+   here in the runbook rather than in `aqua-app`.
 
-2. **Memory is the real shared-resource risk, not the database.** 1.9 GB total
+2. **Open — memory is the real shared-resource risk, not the database.** 1.9 GB total
    on a box running MySQL (148 MB), two Bun SSR processes (~170 MB) and several
    PHP-FPM pools, with ~1.0 GB available and 860 MB of swap in use. No OOM has
    occurred, but Aqua's isolation is logical, not physical: another project
