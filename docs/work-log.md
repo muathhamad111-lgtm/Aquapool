@@ -8,6 +8,36 @@ Newest first.
 
 ---
 
+## 2026-07-23 — Blue heroes, and the clipped gradient headline
+
+Redesigned the hero on services / projects / products (breadcrumb, dot
+eyebrow, larger clamped title, wider lead, grid fading out at the bottom) and
+moved every dark surface onto one blue hue. Details are in the commits; two
+things are worth writing down.
+
+**`--ink` is separate from `--deep` on purpose.** `--deep` now carries enough
+chroma to read as blue across a whole hero, which is right there and wrong for
+a paragraph. `--foreground` points at `--ink`: same lightness, a quarter of the
+saturation. **`--chrome` is likewise deliberately darker than `--deep`** — the
+navbar pill floats directly over these heroes and dissolved into them when it
+sat at a similar lightness.
+
+**The homepage headline was clipped along its top edge.** `bg-clip-text` paints
+the gradient inside the element's _own box_, and on an `inline` span that box is
+only font-size tall — measured at 84px against a 99px line box. Tajawal's Arabic
+ascenders sit above it, so the shadda on «عزّز» was simply not painted. The word
+read as «عزز». The fix is `inline-block` (box becomes the full line box) plus
+`py-[0.14em]` for the ink that still overshoots, with matching negative margins
+so the surrounding rhythm is unchanged.
+
+Worth knowing: the fallback branch of that same heading already had
+`inline-block`, so the bug only appeared once a hero title came from the
+database — i.e. only in production. `src/routes/admin.tsx` still has the
+uncorrected pattern; its text is Latin with no diacritics so nothing clips
+today, but it would if that heading ever became Arabic.
+
+---
+
 ## 2026-07-22 — Public site redesign (homepage, About, header, footer)
 
 Three Claude Design files were imported and implemented against the live data

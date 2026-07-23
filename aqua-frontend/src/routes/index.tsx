@@ -161,15 +161,21 @@ function Home() {
           </div>
 
           <h1 className="mt-6 max-w-4xl text-[clamp(2.25rem,7vw,5.25rem)] font-extrabold leading-[1.18] tracking-tight">
+            {/* `bg-clip-text` paints the gradient inside the element's own box.
+                On an inline span that box is only font-size tall, and Tajawal's
+                Arabic ascenders sit above it — so the tops of the glyphs were
+                being cut off. inline-block makes the box the full line box, and
+                the padding adds headroom for the ink that still overshoots it;
+                the negative margins keep the surrounding rhythm unchanged. */}
             {heroTitle ? (
-              <span className="bg-gradient-to-l from-aqua-2 to-aqua bg-clip-text text-transparent">
+              <span className="-my-[0.14em] inline-block bg-gradient-to-l from-aqua-2 to-aqua bg-clip-text py-[0.14em] text-transparent">
                 {heroTitle}
               </span>
             ) : (
               <>
                 {t.home.titleA}
                 <br />
-                <span className="inline-block bg-gradient-to-l from-aqua-2 to-aqua bg-clip-text pb-[0.12em] text-transparent">
+                <span className="-my-[0.14em] inline-block bg-gradient-to-l from-aqua-2 to-aqua bg-clip-text py-[0.14em] text-transparent">
                   {t.home.titleB}
                 </span>
               </>
