@@ -101,7 +101,7 @@ function Home() {
   // The hero photograph fills the panel behind the copy, so the scrim has to
   // fall on whichever side the text starts from — no logical equivalent of a
   // gradient angle exists in CSS, so it's computed from the direction.
-  const heroScrim = `linear-gradient(${dir === "rtl" ? "255deg" : "105deg"}, rgba(6,39,47,0.96) 0%, rgba(6,39,47,0.82) 40%, rgba(6,39,47,0.35) 100%)`;
+  const heroScrim = `linear-gradient(${dir === "rtl" ? "255deg" : "105deg"}, oklch(0.19 0.06 253 / 0.96) 0%, oklch(0.19 0.06 253 / 0.82) 40%, oklch(0.19 0.06 253 / 0.35) 100%)`;
 
   const years = yearsInBusiness();
   const plus = (n: number) => `+${n}`;
@@ -430,7 +430,7 @@ function Home() {
       <section className="bg-night px-4 pb-16 pt-4 sm:px-6 sm:pb-24 lg:px-8">
         <div
           ref={ctaRef}
-          className="relative mx-auto max-w-5xl overflow-hidden rounded-[34px] border border-aqua/20 bg-gradient-to-br from-[#0c3a45] to-night p-10 text-center sm:p-14 lg:p-20"
+          className="relative mx-auto max-w-5xl overflow-hidden rounded-[34px] border border-aqua/20 bg-gradient-to-br from-night-2 to-night p-10 text-center sm:p-14 lg:p-20"
         >
           <div
             aria-hidden

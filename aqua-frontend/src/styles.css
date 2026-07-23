@@ -42,8 +42,10 @@
   --color-cream: var(--cream);
   --color-lagoon: var(--lagoon);
 
+  --color-ink: var(--ink);
   --color-night: var(--night);
   --color-night-2: var(--night-2);
+  --color-chrome: var(--chrome);
   --color-aqua: var(--aqua);
   --color-aqua-2: var(--aqua-2);
   --color-foam: var(--foam);
@@ -55,13 +57,20 @@
 :root {
   --radius: 1rem;
 
-  /* Ocean Deep palette */
-  --deep: oklch(0.22 0.05 250); /* #0c2340 deep navy */
-  --ocean: oklch(0.38 0.08 235); /* #1a4a6e ocean */
-  --teal: oklch(0.58 0.09 215); /* #2d8a9e teal */
-  --mint: oklch(0.78 0.08 200); /* #5cbdb9 mint */
-  --sand: oklch(0.96 0.012 240); /* soft cool sand */
-  --surface: oklch(0.985 0.005 240);
+  /* Ocean Deep palette. The dark surfaces sit on one blue hue (253); the
+     accents stay in the teal/mint range so they keep their contrast against
+     it — a blue accent on a blue ground would disappear. */
+  --deep: oklch(0.24 0.1 253); /* rich ocean blue — dark surfaces + headings */
+  --ocean: oklch(0.4 0.11 251); /* one step up, for hovers on --deep */
+  --teal: oklch(0.58 0.09 215); /* accent */
+  --mint: oklch(0.78 0.08 200); /* accent */
+  --sand: oklch(0.96 0.012 245); /* soft cool sand */
+  --surface: oklch(0.985 0.005 245);
+
+  /* Body copy. Deliberately *not* --deep: that carries enough chroma to read
+     as blue on a large surface, which is right for a hero and wrong for a
+     paragraph. Same lightness, a quarter of the saturation. */
+  --ink: oklch(0.24 0.035 253);
 
   /* Warm editorial surfaces for the About page. The Ocean Deep tokens above
      are cool-neutral; these are the paper/cream tones the layout is set on,
@@ -70,18 +79,23 @@
   --cream: #f4efe7;
   --lagoon: #eaf6f4;
 
-  /* "Night Aqua" — the immersive dark palette the homepage is built on.
-     Deliberately separate from the Ocean Deep tokens above: those drive the
-     light chrome every other page uses, and the homepage sits on top of a
-     photograph where the navy reads muddy. */
-  --night: #06272f;
-  --night-2: #083039;
+  /* "Night Ocean" — the immersive dark surfaces: the homepage, the footer and
+     the floating navbar. Same blue hue as --deep, two steps darker, so the
+     whole site reads as one colour rather than a teal chrome around blue
+     pages. --aqua stays mint: it is the brand accent and the only thing
+     carrying contrast on these grounds. */
+  --night: oklch(0.19 0.06 253);
+  --night-2: oklch(0.24 0.07 253);
+  /* Navbar pill + mobile drawer. Kept clearly darker than --deep: the pill
+     floats directly over the page heroes, and at a similar lightness it stops
+     reading as a separate object and dissolves into them. */
+  --chrome: oklch(0.15 0.05 253);
   --aqua: #6fe3c6;
   --aqua-2: #b6f5e6;
-  --foam: #e8f4f0;
+  --foam: #e9f1f7;
 
   --background: var(--surface);
-  --foreground: var(--deep);
+  --foreground: var(--ink);
   --card: oklch(1 0 0);
   --card-foreground: var(--deep);
   --popover: oklch(1 0 0);
@@ -96,8 +110,8 @@
   --accent-foreground: oklch(0.99 0 0);
   --destructive: oklch(0.6 0.22 25);
   --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.22 0.05 250 / 10%);
-  --input: oklch(0.22 0.05 250 / 14%);
+  --border: oklch(0.24 0.05 253 / 10%);
+  --input: oklch(0.24 0.05 253 / 14%);
   --ring: var(--teal);
 }
 

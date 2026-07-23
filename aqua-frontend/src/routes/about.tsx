@@ -153,7 +153,7 @@ function About() {
           className="absolute inset-0 opacity-[0.045]"
           style={{
             backgroundImage:
-              "linear-gradient(to right, #0B2E36 1px, transparent 1px), linear-gradient(to bottom, #0B2E36 1px, transparent 1px)",
+              "linear-gradient(to right, #0d2748 1px, transparent 1px), linear-gradient(to bottom, #0d2748 1px, transparent 1px)",
             backgroundSize: "64px 64px",
           }}
         />
@@ -208,7 +208,7 @@ function About() {
           </div>
 
           <div ref={heroArtRef} className="relative">
-            <div className="relative aspect-4/5 overflow-hidden rounded-[28px] shadow-[0_30px_60px_-30px_rgba(11,46,54,0.45)]">
+            <div className="relative aspect-4/5 overflow-hidden rounded-[28px] shadow-[0_30px_60px_-30px_rgba(10,30,60,0.45)]">
               <img
                 src={heroPool}
                 alt={
@@ -219,7 +219,7 @@ function About() {
                 className="absolute inset-0 size-full object-cover"
               />
             </div>
-            <div className="animate-floaty absolute -bottom-5 rounded-[20px] bg-white px-6 py-4 shadow-[0_20px_40px_-18px_rgba(11,46,54,0.35)] start-[-1.375rem]">
+            <div className="animate-floaty absolute -bottom-5 rounded-[20px] bg-white px-6 py-4 shadow-[0_20px_40px_-18px_rgba(10,30,60,0.35)] start-[-1.375rem]">
               <div ref={badgeRef} className="text-[38px] font-black leading-none text-deep">
                 {fmt(years)}
               </div>
@@ -244,7 +244,7 @@ function About() {
               />
             </div>
 
-            <div className="flex flex-col justify-center rounded-3xl border border-deep/8 bg-white p-8 shadow-[0_20px_50px_-40px_rgba(11,46,54,0.4)] sm:p-11">
+            <div className="flex flex-col justify-center rounded-3xl border border-deep/8 bg-white p-8 shadow-[0_20px_50px_-40px_rgba(10,30,60,0.4)] sm:p-11">
               <Eyebrow rule>Our story</Eyebrow>
               <div
                 className="rt-content mt-7 text-[1.2rem] leading-[1.75] text-foreground/80"
@@ -308,8 +308,8 @@ function About() {
                   <div
                     className={`flex h-full min-h-[240px] flex-col justify-between rounded-[22px] p-7 transition duration-300 hover:-translate-y-1.5 ${
                       featured
-                        ? "bg-deep text-white hover:shadow-[0_24px_44px_-26px_rgba(11,46,54,0.5)]"
-                        : "border border-deep/8 bg-white hover:shadow-[0_24px_44px_-30px_rgba(11,46,54,0.4)]"
+                        ? "bg-deep text-white hover:shadow-[0_24px_44px_-26px_rgba(10,30,60,0.5)]"
+                        : "border border-deep/8 bg-white hover:shadow-[0_24px_44px_-30px_rgba(10,30,60,0.4)]"
                     }`}
                   >
                     <div

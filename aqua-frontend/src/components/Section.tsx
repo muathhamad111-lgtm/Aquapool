@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import { Link } from "@tanstack/react-router";
+import { useLang } from "@/i18n/LanguageContext";
 
 export function SectionHeader({
   eyebrow,
@@ -43,53 +45,78 @@ export function PageHero({
   title,
   subtitle,
   eyebrow,
+  /** Label for the current page in the trail. Omit to render no breadcrumb. */
+  breadcrumb,
   children,
 }: {
   title: string;
   subtitle?: string;
   eyebrow?: string;
+  breadcrumb?: string;
   children?: ReactNode;
 }) {
+  const { t } = useLang();
+
   return (
-    <section className="relative bg-deep text-white overflow-hidden">
-      {/* gradient mesh */}
+    <section className="relative overflow-hidden bg-deep text-white">
+      {/* Depth: a wide glow behind the heading, a cooler one low on the
+          opposite side — otherwise the flat blue reads as a printed block. */}
       <div
         aria-hidden
-        className="absolute inset-0 opacity-60"
+        className="absolute inset-0 opacity-70"
         style={{
           background:
-            "radial-gradient(60% 60% at 20% 10%, rgba(92,189,185,0.18), transparent 60%), radial-gradient(50% 50% at 90% 80%, rgba(45,138,158,0.25), transparent 60%)",
+            "radial-gradient(55% 70% at 78% 6%, rgba(92,189,185,0.20), transparent 62%), radial-gradient(50% 60% at 8% 96%, rgba(45,138,158,0.24), transparent 62%)",
         }}
       />
       {/* fine grid */}
       <div
         aria-hidden
-        className="absolute inset-0 opacity-[0.07]"
+        className="absolute inset-0 opacity-[0.06]"
         style={{
           backgroundImage:
             "linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)",
           backgroundSize: "64px 64px",
         }}
       />
+      {/* Fades the grid out at the bottom edge rather than cutting it off. */}
+      <div
+        aria-hidden
+        className="absolute inset-x-0 bottom-0 h-32"
+        style={{ background: "linear-gradient(to bottom, transparent, var(--deep))" }}
+      />
+
       {/* pt clears the fixed floating navbar (see components/Navbar.tsx) while
           the hero's own background still runs to the top edge behind it. */}
-      <div className="container-x relative pb-14 pt-28 sm:pb-20 sm:pt-32 md:pb-28 md:pt-36">
+      <div className="container-x relative pb-20 pt-28 sm:pb-24 sm:pt-32 md:pb-32 md:pt-40">
+        {breadcrumb && (
+          <nav aria-label="Breadcrumb" className="mb-7 flex items-center gap-2 text-[13px]">
+            <Link to="/" className="text-white/45 transition-colors hover:text-mint">
+              {t.nav.home}
+            </Link>
+            <span className="text-white/25">/</span>
+            <span className="font-bold text-mint">{breadcrumb}</span>
+          </nav>
+        )}
+
         {eyebrow && (
-          <div className="flex items-center gap-3 mb-5 md:mb-6">
+          <div className="mb-5 flex items-center gap-3">
             <span className="size-1.5 rounded-full bg-mint" />
             <span
               dir="auto"
-              className="text-[10px] sm:text-[11px] font-bold tracking-[0.3em] uppercase text-mint"
+              className="text-[10px] font-bold uppercase tracking-[0.3em] text-mint sm:text-[11px]"
             >
               {eyebrow}
             </span>
           </div>
         )}
-        <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-extrabold leading-[1.1] md:leading-[1.05] max-w-4xl">
+
+        <h1 className="max-w-4xl text-[clamp(2.5rem,7vw,5.5rem)] font-black leading-[1.12]">
           {title}
         </h1>
+
         {subtitle && (
-          <p className="mt-5 md:mt-6 text-base md:text-lg text-white/65 max-w-2xl leading-relaxed">
+          <p className="mt-6 max-w-3xl text-base leading-relaxed text-white/60 sm:text-lg md:text-xl">
             {subtitle}
           </p>
         )}

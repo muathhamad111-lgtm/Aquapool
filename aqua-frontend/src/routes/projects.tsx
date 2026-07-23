@@ -79,7 +79,12 @@ function ProjectsPage() {
 
   return (
     <>
-      <PageHero eyebrow="Selected works" title={t.projects.title} subtitle={t.projects.sub} />
+      <PageHero
+        eyebrow="Selected works"
+        breadcrumb={t.nav.projects}
+        title={t.projects.title}
+        subtitle={t.projects.sub}
+      />
 
       <section className="py-14 sm:py-20 lg:py-28">
         <div className="container-x">

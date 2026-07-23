@@ -102,7 +102,12 @@ function ServicesPage() {
 
   return (
     <>
-      <PageHero eyebrow="What we do" title={t.services.title} subtitle={t.services.sub} />
+      <PageHero
+        eyebrow="What we do"
+        breadcrumb={t.nav.services}
+        title={t.services.title}
+        subtitle={t.services.sub}
+      />
       <section className="py-14 sm:py-20 lg:py-28">
         <div className="container-x">
           <div className="mb-8 p-2 bg-white border border-border rounded-xl flex flex-wrap items-center gap-2 w-full max-w-full overflow-hidden">

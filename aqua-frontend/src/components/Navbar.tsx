@@ -70,7 +70,7 @@ export function Navbar() {
           first section is coloured. Each page's first section carries the top
           padding that keeps its content clear of the pill. */}
       <div className="fixed inset-x-0 top-0 z-50 px-4 pt-4 sm:px-6 sm:pt-[18px]">
-        <nav className="mx-auto flex h-[62px] max-w-[1180px] items-center justify-between gap-5 rounded-full border border-white/12 bg-[#09262d]/72 ps-3 pe-5 shadow-[0_22px_50px_-26px_rgba(4,26,31,0.9)] backdrop-blur-[22px] backdrop-saturate-150 sm:h-[70px]">
+        <nav className="mx-auto flex h-[62px] max-w-[1180px] items-center justify-between gap-5 rounded-full border border-white/12 bg-chrome/72 ps-3 pe-5 shadow-[0_22px_50px_-26px_rgba(6,20,38,0.9)] backdrop-blur-[22px] backdrop-saturate-150 sm:h-[70px]">
           <Link to="/" className="flex shrink-0 items-center ps-2" aria-label="Aqua Pool Group">
             <img src={logoWhite} alt="Aqua Pool Group" className="h-9 w-auto sm:h-10" />
           </Link>
@@ -134,7 +134,7 @@ export function Navbar() {
         {/* Mobile drawer — a second floating panel under the pill, so the
             chrome keeps its shape instead of turning into a full-width sheet. */}
         {open && (
-          <div className="mx-auto mt-2.5 max-w-[1180px] rounded-[28px] border border-white/12 bg-[#09262d]/95 p-3 shadow-[0_22px_50px_-26px_rgba(4,26,31,0.9)] backdrop-blur-[22px] backdrop-saturate-150 lg:hidden">
+          <div className="mx-auto mt-2.5 max-w-[1180px] rounded-[28px] border border-white/12 bg-chrome/95 p-3 shadow-[0_22px_50px_-26px_rgba(6,20,38,0.9)] backdrop-blur-[22px] backdrop-saturate-150 lg:hidden">
             <div className="flex flex-col gap-1">
               {links.map((l) => {
                 const active = pathname === l.to;

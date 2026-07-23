@@ -77,7 +77,12 @@ function ProductsPage() {
 
   return (
     <>
-      <PageHero eyebrow="Catalog" title={t.products.title} subtitle={t.products.sub} />
+      <PageHero
+        eyebrow="Catalog"
+        breadcrumb={t.nav.products}
+        title={t.products.title}
+        subtitle={t.products.sub}
+      />
       <section className="py-14 sm:py-20 lg:py-28">
         <div className="container-x">
           <div className="mb-8 p-2 bg-white border border-border rounded-xl flex flex-wrap items-center gap-2 w-full max-w-full overflow-hidden">
